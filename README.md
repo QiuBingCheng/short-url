@@ -2,11 +2,11 @@
 
 ## Introduction
 
-![Index](images/index.png)
+![Index](images/index.jpg)
 
-![Trace](images/trace.png)
+![Trace](images/trace.jpg)
 
-![Admin](images/admin.png)
+![Admin](images/admin.jpg)
 
 ## Setting up a development environment
 ```
