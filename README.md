@@ -1,4 +1,12 @@
-# url_shortener
+# Url Shortener
+
+## Introduction
+
+![Index](images/index.png)
+
+![Trace](images/trace.png)
+
+![Admin](images/admin.png)
 
 ## Setting up a development environment
 ```
@@ -12,7 +20,7 @@ pip install -r requirements.txt
 
 ## Initializing the Database
 ```
-# Create DB tables and populate the roles and users tables
+# Create DB tables
 python manage.py init_db
 ```
 
