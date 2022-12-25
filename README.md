@@ -9,3 +9,15 @@ env\Scripts\activate
 # Install required Python packages
 pip install -r requirements.txt
 ```
+
+## Initializing the Database
+```
+# Create DB tables and populate the roles and users tables
+python manage.py init_db
+```
+
+## Running the app
+```
+# Start the Flask development web server
+python manage.py runserver
+```
