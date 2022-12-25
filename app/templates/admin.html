@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>admin</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.5.2/css/bootstrap.css" />
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.1/css/dataTables.bootstrap4.min.css" />
+    <script src="https://code.jquery.com/jquery-3.5.1.js"></script>
+    <script type="text/javascript" src="https://cdn.datatables.net/1.13.1/js/jquery.dataTables.min.js"></script>
+    <script type="text/javascript" src="https://cdn.datatables.net/1.13.1/js/dataTables.bootstrap4.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@9"></script>
+    <style>
+        .container {
+            padding-top: 3rem !important;
+            margin-left: 10%;
+        }
+
+        .warp {
+            width: 100%;
+            white-space: normal;
+            word-wrap: break-word;
+            word-break: break-all;
+        }
+
+        .navbar-light .navbar-nav .nav-link {
+            color: #17a2b8;
+        }
+
+        .nav-item,
+        .nav-link {
+            color: #17a2b8;
+        }
+    </style>
+</head>
+<nav class="navbar navbar-expand-lg navbar-light bg-light">
+    <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
+        <div class="navbar-nav">
+            <a class="nav-item nav-link" href="/"><b>Home</b></a>
+            <a class="nav-item nav-link active" href="#">Admin <span class="sr-only">(current)</span></a>
+            <a class="nav-item nav-link" href="/logout"><b>Logout</b></a>
+        </div>
+    </div>
+</nav>
+<div class="container justify-content-center">
+    <h1>Url Mapping Data in Database</h1>
+    <table id="datatables" class="table table-striped table-bordered" style="width:100%">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Created Time</th>
+                <th>Short url</th>
+                <th>Long Url</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for url in url_mapping%}
+            <tr id="row{{ url.Id }}">
+                <td style="text-align: center">{{ url.Id }}</td>
+                <td>{{ url.created_time }}</td>
+                <td>{{ url.short_url }}</td>
+                <td>
+                    <div class="warp">{{ url.long_url }}</div>
+                </td>
+                <td><a href="{{url.tracing_url}}">追蹤</a>|<a href="#" id="{{url.Id}}" class="delete">刪除</a></td>
+            </tr>
+            {% endfor%}
+        </tbody>
+    </table>
+</div>
+<script type=text/javascript>
+    $(document).ready( function () {
+        $('#datatables').DataTable({
+                "columns": [
+                { "width": "5%"},
+                { "width": "20%"},
+                { "width": "30%"},
+                { "width": "35%"},
+                { "width": "10%"}
+                ],
+                scrollX: true,
+                fixedColumns: true
+                });
+} );
+
+
+        $('#datatables tbody').on('click', 'a.delete', function () {
+            console.log("delete_ajax")
+            urlId = this.id
+            $.getJSON("/delete_ajax", {
+                Id: urlId
+            }, function(data) {
+            console.log(data)
+            if (data=="success"){
+                var row = $("#row"+urlId);
+                console.log(row);
+                //table.row(row).remove().draw();
+                row.remove();
+            }
+            else{
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Oops...',
+                    text: '發生錯誤',
+                })
+            }
+            
+      });
+      return false;
+    });  
+    </script>
+
+</html>

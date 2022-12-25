@@ -1,0 +1,51 @@
+<html>
+
+<head>
+  <!-- Material Design Bootstrap -->
+  <link type="text/css" rel="stylesheet" href={{ url_for('static', filename='admin/style.css')}}>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/mdbootstrap/4.19.0/css/mdb.min.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@9"></script>
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+
+</head>
+
+<body>
+  <div class="wrapper fadeInDown">
+    <div id="formContent">
+      <!-- Tabs Titles -->
+      <!-- Login Form -->
+      <form action="/admin" id="loginForm">
+        <input type="text" class="fadeIn second" name="username" placeholder="username">
+        <input type="text" class="fadeIn third" name="password" placeholder="password">
+        <input type="button" class="fadeIn fourth" value="Login in" id="login">
+      </form>
+    </div>
+  </div>
+</body>
+<script type=text/javascript>
+ $SCRIPT_ROOT = {{ request.script_root|tojson|safe }};
+
+$(function() {
+    $('#login').bind('click', function() {
+      $.getJSON($SCRIPT_ROOT+"/validate", {
+        username: $('input[name="username"]').val(),
+        password: $('input[name="password"]').val()
+      }, function(data) {
+          console.log(data)
+          if (data=="success")
+            document.getElementById("loginForm").submit()
+          else{
+            Swal.fire({
+                icon: 'error',
+                title: 'Oops...',
+                text: '帳密錯誤',
+            })
+          }
+            
+      });
+      return false;
+    });
+  });
+</script>
+
+</html>

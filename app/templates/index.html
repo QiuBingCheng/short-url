@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+
+<head>
+    <title>縮短網址產生器 - bingcheng</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.3.1/dist/css/bootstrap.min.css" />
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.2/css/all.css">
+    <!-- Google Fonts -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap">
+    <!-- Bootstrap core CSS -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.5.0/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Material Design Bootstrap -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/mdbootstrap/4.19.1/css/mdb.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@9"></script>
+    <style>
+        button {
+            margin-top: 15px
+        }
+
+        h1 {
+            color: aliceblue;
+        }
+
+        body {
+            background-color: #17a2b8;
+            color: aliceblue;
+        }
+
+        .container {
+            text-align: center;
+            padding-top: 3rem !important;
+        }
+
+        .col-md-10 {
+            max-width: 100%;
+            text-align: center;
+        }
+
+        .navbar {
+            font-weight: 500;
+        }
+
+        .navbar .nav-item .nav-link .fab {
+            padding-right: 6px;
+            padding-left: 6px;
+        }
+
+        .default-color {
+            background-color: #17a2b8 !important;
+        }
+
+        .btn-info {
+            border: solid 2px aliceblue;
+            color: aliceblue;
+            font-size: 16px;
+            background-color: #17a2b8 !important;
+        }
+
+        .likecoin-button {
+            margin-left: 0px;
+            max-width: 1000px;
+        }
+    </style>
+</head>
+<nav class="mb-1 navbar navbar-expand-lg navbar-dark default-color">
+    <a class="navbar-brand" href="#">IP TRACER</a>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent-3"
+        aria-controls="navbarSupportedContent-3" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarSupportedContent-3">
+        <ul class="navbar-nav mr-auto">
+            <li class="nav-item active">
+                <a class="nav-link waves-effect waves-light" href="#">Home
+                    <span class="sr-only">(current)</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link waves-effect waves-light" href="/admin">Admin
+                </a>
+            </li>
+        </ul>
+        <ul class="navbar-nav ml-auto nav-flex-icons">
+            <li class="nav-item">
+                <a class="nav-link waves-effect waves-light" href="https://medium.com/@carrot-cheng">
+                    <i class="fab fa-medium-m"></i>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link waves-effect waves-light" href="https://github.com/QiuBingCheng">
+                    <i class="fab fa-github"></i>
+                </a>
+            </li>
+        </ul>
+    </div>
+</nav>
+<section>
+    <div class="container" padding-top>
+        <div class="col-md-10">
+            <h1>Shorten it. Track it.</h1>
+            <form action="" method="post" id="trackForm" class="justify-content-center">
+                <div class="input-group-lg">
+                    <input id="shortenBox" name="url" type="text" autofocus="autofocus" class="form-control input-cls"
+                        placeholder="輸入合法的網址或是追蹤碼">
+                </div>
+                <div class="form-group col-xs-12">
+                    <button type="button" id="shortenUrl" class="btn btn-info"
+                        style="margin-right: 10px;border-color: azure;" onclick="shortenUrlForm()">縮短網址</button>
+                    <button type="button" class="btn btn-info" style="border-color: azure;"
+                        onclick="traceUrl()">追蹤網址</button>
+
+                </div>
+            </form>
+        </div>
+    </div>
+</section>
+<script type="text/javascript">
+    var iframes = document.getElementsByClassName("likecoin-button");
+    for (let index = 0; index < iframes.length; index++) {
+        iframes[index].children[0].style.paddingTop = "32.48454%";
+
+    }
+
+    function validateUrl(str) {
+        var pattern = new RegExp(/[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)/gm);
+        return !!pattern.test(str);
+    }
+    function validateTraceCode(str) {
+        var pattern = new RegExp('^[0-9a-zA-Z]+$')
+        return !!pattern.test(str)
+    }
+
+    function shortenUrlForm() {
+        var str = document.getElementById("shortenBox").value
+        if (str == "")
+            return
+        if (!validateUrl(str)) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Oops...',
+                text: '您輸入的不是合法的網址。',
+            })
+        }
+        else {
+            document.getElementById("trackForm").submit()
+        }
+    }
+    function traceUrl() {
+        var str = document.getElementById("shortenBox").value
+        if (str == "")
+            return
+        if (!validateTraceCode(str)) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Oops...',
+                text: '追蹤碼只包含大小寫英文及數字',
+            })
+            return
+        }
+        else {
+            window.location.href = '/trace/' + str
+        }
+    }
+
+</script>
+
+</html>
