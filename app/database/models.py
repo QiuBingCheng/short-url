@@ -36,7 +36,6 @@ class ModelBase():
 class UrlMapping(db.Model, ModelBase):
     __tablename__ = 'url_mapping'
 
-    # Id = db.Column(db.Integer, primary_key=True)
     short_url = db.Column(db.String(64))
     long_url = db.Column(db.String(256))
 
@@ -48,7 +47,6 @@ class UrlMapping(db.Model, ModelBase):
 class TracingRecord(db.Model, ModelBase):
     __tablename__ = 'tracing_record'
 
-    # Id = db.Column(db.Integer, primary_key=True)
     tracing_code = db.Column(db.String(64))
     ip = db.Column(db.String(64))
     port = db.Column(db.String(8))

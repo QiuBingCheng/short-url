@@ -3,8 +3,8 @@ import json
 import requests
 from datetime import datetime, timedelta, timezone
 from app.util.converter import base62_encode
-from flask import Flask, request, render_template, jsonify, redirect, url_for, session
-from app.database.models import *
+from flask import request, render_template, jsonify, redirect, url_for, session
+from app.database.models import UrlMapping, TracingRecord
 from app import app
 # import pytz
 # %%
@@ -52,12 +52,13 @@ def get_url_max_id():
 
 @app.route('/', methods=('GET', 'POST'))
 def home():
+    print("home")
     if request.method == 'POST':
 
         url = request.form['url']
         max_id = get_url_max_id()
         token = base62_encode(max_id)
-        short_url = f'{app.config["DOMAIN_NAME"]}/{token}'
+        short_url = f'{app.config["HOST"]}/{token}'
         user = UrlMapping(short_url, url)
         user.save()
         return redirect(url_for("trace", tracing_code=token))
@@ -67,12 +68,12 @@ def home():
 
 @app.route('/trace/<tracing_code>')
 def trace(tracing_code):
-    short_url = '{}/{}'.format(app.config["DOMAIN_NAME"], tracing_code)
+    short_url = '{}/{}'.format(app.config["HOST"], tracing_code)
     url_mapping = UrlMapping.query.filter_by(
         short_url=short_url).first_or_404()
     long_url = url_mapping.long_url
     tracing_url = '{}/trace/{}'.format(
-        app.config["DOMAIN_NAME"], tracing_code)
+        app.config["HOST"], tracing_code)
 
     # 檢查有無紀錄
     records_of_the_url = TracingRecord.query.filter_by(
@@ -123,9 +124,9 @@ def admin():
         url_mapping = UrlMapping.query.all()
         for i, url in enumerate(url_mapping):
             tracing_code = url.short_url.replace(
-                app.config["DOMAIN_NAME"]+"/", "")
+                app.config["HOST"]+"/", "")
             url_mapping[i].tracing_url = '{}/trace/{}'.format(
-                app.config["DOMAIN_NAME"], tracing_code)
+                app.config["HOST"], tracing_code)
             url_mapping[i].created_time = url_mapping[i].created_time.strftime(
                 '%Y-%m-%d %H:%M:%S')
         return render_template("admin.html", url_mapping=url_mapping)
