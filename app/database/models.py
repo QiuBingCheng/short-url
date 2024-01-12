@@ -1,4 +1,3 @@
-# from app import db
 from app import db
 import datetime
 
@@ -42,6 +41,11 @@ class UrlMapping(db.Model, ModelBase):
     def __init__(self, short_url, long_url):
         self.short_url = short_url
         self.long_url = long_url
+
+    @classmethod
+    def get_max_id(cls):
+        url = db.session.query(db.func.max(cls.Id)).first()
+        return url[0]+1 if url[0] is not None else 1
 
 
 class TracingRecord(db.Model, ModelBase):

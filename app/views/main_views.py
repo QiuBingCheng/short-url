@@ -1,53 +1,9 @@
-import os
-import json
-import requests
-from datetime import datetime, timedelta, timezone
-from app.util.converter import base62_encode
+from datetime import timedelta, timezone
 from flask import request, render_template, jsonify, redirect, url_for, session
 from app.database.models import UrlMapping, TracingRecord
 from app import app
-# import pytz
-# %%
-
-
-def get_client_information(request):
-    # ip
-    if 'HTTP_X_REAL_IP' in request.environ:
-        ip = request.environ.get('HTTP_X_REAL_IP')
-    elif 'CF-Connecting-IP' in request.headers:
-        ip = request.headers['CF-Connecting-IP']
-    elif request.headers.getlist("X-Forwarded-For"):
-        ip = request.headers.getlist("X-Forwarded-For")[0]
-    else:
-        ip = request.environ.get('REMOTE_ADDR')
-
-    # port
-    port = request.environ.get('REMOTE_PORT')
-
-    # user_agent
-    user_agent = request.environ.get('HTTP_USER_AGENT')
-
-    # get location
-    try:
-        url = "http://api.ipstack.com/{}?access_key={}".format(
-            ip, app.config["IPSTACK_API_KEY"])
-        response = requests.get(url)
-        identity = json.loads(response.text)
-        longitude = identity["longitude"]
-        latitude = identity["latitude"]
-        location = f"{round(latitude,6)},{round(longitude,6)}"
-    except:
-        location = "NA,NA"
-
-    info = {"ip": ip, "port": port, "user_agent": user_agent,
-            "location": location
-            }
-    return info
-
-
-def get_url_max_id():
-    url = db.session.query(db.func.max(UrlMapping.Id)).first()
-    return url[0]+1 if url[0] is not None else 1
+from app.util.util import get_client_information
+import base62
 
 
 @app.route('/', methods=('GET', 'POST'))
@@ -56,11 +12,12 @@ def home():
     if request.method == 'POST':
 
         url = request.form['url']
-        max_id = get_url_max_id()
-        token = base62_encode(max_id)
+        max_id = UrlMapping.get_max_id()
+        token = base62.encode(max_id)
         short_url = f'{app.config["HOST"]}/{token}'
         user = UrlMapping(short_url, url)
         user.save()
+        print(short_url, url)
         return redirect(url_for("trace", tracing_code=token))
 
     return render_template('index.html')
@@ -68,14 +25,14 @@ def home():
 
 @app.route('/trace/<tracing_code>')
 def trace(tracing_code):
-    short_url = '{}/{}'.format(app.config["HOST"], tracing_code)
+    short_url = f"{app.config['HOST']}/{tracing_code}"
     url_mapping = UrlMapping.query.filter_by(
         short_url=short_url).first_or_404()
     long_url = url_mapping.long_url
     tracing_url = '{}/trace/{}'.format(
         app.config["HOST"], tracing_code)
 
-    # 檢查有無紀錄
+    # query the visit records of the trace
     records_of_the_url = TracingRecord.query.filter_by(
         tracing_code=tracing_code).all()
     for record in records_of_the_url:
@@ -87,7 +44,6 @@ def trace(tracing_code):
         record.longitude = longitude
         record.user_agent = "".join(
             [s+"#" if s == ")" else s.strip() for s in record.user_agent]).split("#")
-        print(record.user_agent)
     return render_template('track.html', records=records_of_the_url,
                            short_url=short_url,
                            long_url=long_url,
@@ -98,12 +54,10 @@ def trace(tracing_code):
 
 @app.route('/<tracing_code>')
 def redirect_url(tracing_code):
-    print(tracing_code)
-    short_url = '{}/{}'.format(app.config["DOMAIN_NAME"], tracing_code)
+    short_url = f"{app.config['HOST']}/{tracing_code}"
 
     url_mapping = UrlMapping.query.filter_by(
         short_url=short_url).first_or_404()
-    print(url_mapping.long_url)
 
     info = get_client_information(request)
 

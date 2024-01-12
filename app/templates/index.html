@@ -126,7 +126,9 @@
 
     function validateUrl(str) {
         var pattern = new RegExp(/[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)/gm);
-        return !!pattern.test(str);
+        var flag1 = pattern.test(str);
+        var flag2 = (str.indexOf(window.location.hostname) == -1)
+        return flag1 & flag2;
     }
     function validateTraceCode(str) {
         var pattern = new RegExp('^[0-9a-zA-Z]+$')

@@ -1,6 +1,5 @@
 from flask_script import Command
 from app import db
-from app.database.models import UrlMapping, TracingRecord
 
 
 class InitDbCommand(Command):
