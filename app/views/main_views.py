@@ -3,7 +3,6 @@ from flask import request, render_template, jsonify, redirect, url_for, session
 from app.database.models import UrlMapping, TracingRecord
 from app import app
 from app.util.util import get_client_information
-import base62
 
 
 @app.route('/', methods=('GET', 'POST'))
@@ -12,8 +11,8 @@ def home():
     if request.method == 'POST':
 
         url = request.form['url']
-        max_id = UrlMapping.get_max_id()
-        token = base62.encode(max_id)
+        # next token
+        token = UrlMapping.next_token()
         short_url = f'{app.config["HOST"]}/{token}'
         user = UrlMapping(short_url, url)
         user.save()
@@ -125,11 +124,11 @@ def delete_ajax():
         records = TracingRecord.query.filter_by(
             tracing_code=tracing_code).all()
 
-        # delete mapping
+        # delete mapping and records
         url.delete()
-        # delete records
         for record in records:
             record.delete()
+
         return jsonify("success")
     except Exception as e:
         print(str(e))
