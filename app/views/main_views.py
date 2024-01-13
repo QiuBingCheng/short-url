@@ -2,7 +2,7 @@ from datetime import timedelta, timezone
 from flask import request, render_template, jsonify, redirect, url_for, session
 from app.database.models import UrlMapping, TracingRecord
 from app import app
-from app.util.util import get_client_information
+from app.util.util import get_client_information, is_admin
 
 
 @app.route('/', methods=('GET', 'POST'))
@@ -91,7 +91,7 @@ def validate_user():
     username = request.args.get("username")
     password = request.args.get("password")
 
-    if (app.config["USERNAME"] == username and app.config["PASSWORD"] == password):
+    if is_admin(username, password):
         session.permanent = True
         session["logged_in"] = True
         return jsonify("success")

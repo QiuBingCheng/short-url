@@ -5,13 +5,14 @@ from flask import Flask
 from flask_script import Manager
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate, MigrateCommand
+from dotenv import load_dotenv
 
 # Instantiate Flask extensions
 # Instantiate Flask
 app = Flask(__name__)
 db = SQLAlchemy()
 migrate = Migrate()
-
+load_dotenv()
 # Initialize Flask Application
 
 
@@ -19,8 +20,7 @@ def create_app():
     """Create a Flask application.
     """
     # Load environment specific settings
-    app.config.from_object('app.local_settings')
-    # app.config.from_object('app.settings')
+    app.config.from_object('app.settings')
 
     # Setup Flask-SQLAlchemy
     db.init_app(app)

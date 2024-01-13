@@ -1,10 +1,19 @@
 from app import app
 import requests
 import json
+import os
+
+IPSTACK_API_KEY = os.getenv("IPSTACK_API_KEY")
+USERNAME = os.getenv("USERNAME")
+PASSWORD = os.getenv("PASSWORD")
+
+
+def is_admin(username, password):
+    return username == USERNAME and password == PASSWORD
 
 
 def get_location(ip):
-    url = f"http://api.ipstack.com/{ip}?access_key={app.config['IPSTACK_API_KEY']}"
+    url = f"http://api.ipstack.com/{ip}?access_key={IPSTACK_API_KEY}"
     try:
         response = requests.get(url)
         identity = json.loads(response.text)
