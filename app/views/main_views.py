@@ -13,10 +13,8 @@ def home():
         url = request.form['url']
         # next token
         token = UrlMapping.next_token()
-        short_url = f'{app.config["HOST"]}/{token}'
-        user = UrlMapping(short_url, url)
+        user = UrlMapping(token, url)
         user.save()
-        print(short_url, url)
         return redirect(url_for("trace", tracing_code=token))
 
     return render_template('index.html')
@@ -24,12 +22,11 @@ def home():
 
 @app.route('/trace/<tracing_code>')
 def trace(tracing_code):
-    short_url = f"{app.config['HOST']}/{tracing_code}"
     url_mapping = UrlMapping.query.filter_by(
-        short_url=short_url).first_or_404()
+        tracing_code=tracing_code).first_or_404()
+    short_url = f"{app.config['HOST']}/{tracing_code}"
     long_url = url_mapping.long_url
-    tracing_url = '{}/trace/{}'.format(
-        app.config["HOST"], tracing_code)
+    tracing_url = f"{app.config['HOST']}/trace/{tracing_code}"
 
     # query the visit records of the trace
     records_of_the_url = TracingRecord.query.filter_by(
@@ -53,11 +50,9 @@ def trace(tracing_code):
 
 @app.route('/<tracing_code>')
 def redirect_url(tracing_code):
-    short_url = f"{app.config['HOST']}/{tracing_code}"
 
     url_mapping = UrlMapping.query.filter_by(
-        short_url=short_url).first_or_404()
-
+        tracing_code=tracing_code).first_or_404()
     info = get_client_information(request)
 
     # create record
@@ -120,7 +115,7 @@ def delete_ajax():
         Id = int(request.args.get("Id"))
         url = UrlMapping.query.get(Id)
         tracing_code = url.short_url.replace(
-            app.config["DOMAIN_NAME"]+"/", "")
+            app.config["HOST"]+"/", "")
         records = TracingRecord.query.filter_by(
             tracing_code=tracing_code).all()
 
