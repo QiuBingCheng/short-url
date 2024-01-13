@@ -18,10 +18,9 @@ migrate = Migrate()
 def create_app():
     """Create a Flask application.
     """
-    # Load common settings
-    app.config.from_object('app.settings')
     # Load environment specific settings
-    # app.config.from_object('app.local_settings')
+    app.config.from_object('app.local_settings')
+    # app.config.from_object('app.settings')
 
     # Setup Flask-SQLAlchemy
     db.init_app(app)
