@@ -7,7 +7,6 @@ from app.util.util import get_client_information
 
 @app.route('/', methods=('GET', 'POST'))
 def home():
-    print("home")
     if request.method == 'POST':
 
         url = request.form['url']
