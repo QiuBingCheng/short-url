@@ -19,7 +19,7 @@ load_dotenv()
 def create_app():
     """Create a Flask application.
     """
-    # Load environment specific settings
+    # Load common settings
     app.config.from_object('app.settings')
 
     # Setup Flask-SQLAlchemy
