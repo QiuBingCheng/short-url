@@ -3,9 +3,9 @@ import requests
 import json
 import os
 
-IPSTACK_API_KEY = os.getenv("IPSTACK_API_KEY")
-USERNAME = os.getenv("USERNAME")
-PASSWORD = os.getenv("PASSWORD")
+IPSTACK_API_KEY = app.config["IPSTACK_API_KEY"]
+USERNAME = app.config["USERNAME"]
+PASSWORD = app.config["PASSWORD"]
 
 
 def is_admin(username, password):

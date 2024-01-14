@@ -38,7 +38,7 @@ class UrlMapping(db.Model, ModelBase):
     __tablename__ = 'url_mapping'
 
     tracing_code = db.Column(db.String(64))
-    long_url = db.Column(db.String(256))
+    long_url = db.Column(db.String(512))
 
     def __init__(self, tracing_code, long_url):
         self.tracing_code = tracing_code

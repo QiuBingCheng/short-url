@@ -4,27 +4,49 @@
 from flask import Flask
 from flask_script import Manager
 from flask_sqlalchemy import SQLAlchemy
-from flask_migrate import Migrate, MigrateCommand
+from flask_migrate import Migrate
+from google.cloud.sql.connector import Connector, IPTypes
 from dotenv import load_dotenv
+import os
 
-# Instantiate Flask extensions
-# Instantiate Flask
+
+# %%
 app = Flask(__name__)
+app.config.from_object('app.settings')
+
+# Update config if it is in env
+load_dotenv()
+for key in app.config:
+    value = os.getenv(key)
+    if value is not None:
+        app.config[key] = value
+
 db = SQLAlchemy()
 migrate = Migrate()
-load_dotenv()
-# Initialize Flask Application
+connector = Connector()
 
 
 def create_app():
-    """Create a Flask application.
-    """
-    # Load common settings
-    app.config.from_object('app.settings')
+
+    # Python Connector database connection function
+    def getconn():
+        conn = connector.connect(
+            # Cloud SQL Instance Connection Name
+            app.config["CLOUD_SQL_INSTANCE"],
+            "pymysql",
+            user=app.config["DB_USER"],
+            password=app.config["DB_PASSWORD"],
+            db=app.config["DB_NAME"],
+            ip_type=IPTypes.PUBLIC
+        )
+        return conn
+
+    app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
+        "creator": getconn
+    }
 
     # Setup Flask-SQLAlchemy
     db.init_app(app)
-
     # Setup Flask-Migrate
     migrate.init_app(app, db)
 
