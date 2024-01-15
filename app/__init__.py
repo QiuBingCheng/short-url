@@ -2,7 +2,6 @@
 # a Python package so it can be accessed using the 'import' statement.
 
 from flask import Flask
-from flask_script import Manager
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from google.cloud.sql.connector import Connector, IPTypes
@@ -21,6 +20,9 @@ for key in app.config:
     if value is not None:
         app.config[key] = value
 
+app.secret_key = app.config["SECRET_KEY"]
+
+# init import object
 db = SQLAlchemy()
 migrate = Migrate()
 connector = Connector()

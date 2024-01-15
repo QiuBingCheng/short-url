@@ -21,18 +21,26 @@ def get_location(ip):
         latitude = identity["latitude"]
         location = f"{latitude:.3f},{longitude:.3f}"
         return location
-    except:
+    except requests.exceptions.RequestException as e:
+        # Log the error or handle it as needed
+        print(f"Error in get_location: {e}")
+        return "NA,NA"
+    except json.JSONDecodeError as e:
+        # Log the error or handle it as needed
+        print(f"Error decoding JSON in get_location: {e}")
         return "NA,NA"
 
 
 def get_client_information(request):
+    # get information from request
+
     # ip
     if 'HTTP_X_REAL_IP' in request.environ:
         ip = request.environ.get('HTTP_X_REAL_IP')
     elif 'CF-Connecting-IP' in request.headers:
         ip = request.headers['CF-Connecting-IP']
     elif request.headers.getlist("X-Forwarded-For"):
-        ip = request.headers.getlist("X-Forwarded-For")[0]
+        ip = request.headers.getlist("X-Forwarded-For").split(',')[0]
     else:
         ip = request.environ.get('REMOTE_ADDR')
 
