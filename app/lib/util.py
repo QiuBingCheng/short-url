@@ -1,7 +1,7 @@
 from app import app
 import requests
 import json
-import os
+import logging
 
 IPSTACK_API_KEY = app.config["IPSTACK_API_KEY"]
 USERNAME = app.config["USERNAME"]
@@ -13,6 +13,9 @@ def is_admin(username, password):
 
 
 def get_location(ip):
+    # get Latitude and longitude separated by commas
+    default_location = "NA,NA"
+
     url = f"http://api.ipstack.com/{ip}?access_key={IPSTACK_API_KEY}"
     try:
         response = requests.get(url)
@@ -23,12 +26,12 @@ def get_location(ip):
         return location
     except requests.exceptions.RequestException as e:
         # Log the error or handle it as needed
-        print(f"Error in get_location: {e}")
-        return "NA,NA"
+        logging.error(f"Error in get_location: {e}")
+        return default_location
     except json.JSONDecodeError as e:
         # Log the error or handle it as needed
-        print(f"Error decoding JSON in get_location: {e}")
-        return "NA,NA"
+        logging.error(f"Error decoding JSON in get_location: {e}")
+        return default_location
 
 
 def get_client_information(request):
@@ -39,8 +42,8 @@ def get_client_information(request):
         ip = request.environ.get('HTTP_X_REAL_IP')
     elif 'CF-Connecting-IP' in request.headers:
         ip = request.headers['CF-Connecting-IP']
-    elif request.headers.getlist("X-Forwarded-For"):
-        ip = request.headers.getlist("X-Forwarded-For").split(',')[0]
+    elif 'X-Forwarded-For' in request.headers:
+        ip = request.headers['X-Forwarded-For'].split(',')[0]
     else:
         ip = request.environ.get('REMOTE_ADDR')
 

@@ -7,8 +7,11 @@ from flask_migrate import Migrate
 from google.cloud.sql.connector import Connector, IPTypes
 from dotenv import load_dotenv
 import os
-
-
+import logging
+logging.basicConfig(level=logging.INFO, filemode='w',
+                    format='[%(asctime)s %(levelname)-8s] %(message)s',
+                    datefmt='%Y%m%d %H:%M:%S',
+                    )
 # %%
 app = Flask(__name__)
 app.config.from_object('app.settings')

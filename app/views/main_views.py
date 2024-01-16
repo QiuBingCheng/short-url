@@ -2,7 +2,7 @@ from datetime import timedelta, timezone
 from flask import request, render_template, jsonify, redirect, url_for, session
 from app.database.models import UrlMapping, TracingRecord
 from app import app
-from app.util.util import get_client_information, is_admin
+from app.lib.util import get_client_information, is_admin
 
 
 @app.route('/', methods=('GET', 'POST'))
@@ -10,7 +10,6 @@ def home():
     if request.method == 'POST':
 
         url = request.form['url']
-        # next token
         token = UrlMapping.next_token()
         user = UrlMapping(token, url)
         user.save()
