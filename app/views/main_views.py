@@ -1,8 +1,10 @@
-from datetime import timedelta, timezone
+
 from flask import request, render_template, jsonify, redirect, url_for, session
 from app.database.models import UrlMapping, TracingRecord
 from app import app
-from app.lib.util import get_client_information, is_admin
+from app.lib.util import is_admin, date_str, make_short_url, make_tracing_url
+from app.lib.request_parser import get_client_info
+from app.lib.db_operation import next_token
 
 
 @app.route('/', methods=('GET', 'POST'))
@@ -10,7 +12,7 @@ def home():
     if request.method == 'POST':
 
         url = request.form['url']
-        token = UrlMapping.next_token()
+        token = next_token()
         user = UrlMapping(token, url)
         user.save()
         return redirect(url_for("trace", tracing_code=token))
@@ -22,17 +24,14 @@ def home():
 def trace(tracing_code):
     url_mapping = UrlMapping.query.filter_by(
         tracing_code=tracing_code).first_or_404()
-    short_url = f"{app.config['HOST']}/{tracing_code}"
-    long_url = url_mapping.long_url
-    tracing_url = f"{app.config['HOST']}/trace/{tracing_code}"
+    short_url = make_short_url(tracing_code)
+    tracing_url = make_tracing_url(tracing_code)
 
     # query the visit records of the trace
     records_of_the_url = TracingRecord.query.filter_by(
         tracing_code=tracing_code).all()
     for record in records_of_the_url:
-        record.created_time = record.created_time.astimezone(
-            timezone(timedelta(hours=8)))
-        record.date = record.created_time.strftime('%Y-%m-%d %H:%M:%S')
+        record.date = date_str(record.created_time)
         latitude, longitude = record.location.split(",")
         record.latitude = latitude
         record.longitude = longitude
@@ -40,7 +39,7 @@ def trace(tracing_code):
             [s+"#" if s == ")" else s.strip() for s in record.user_agent]).split("#")
     return render_template('track.html', records=records_of_the_url,
                            short_url=short_url,
-                           long_url=long_url,
+                           long_url=url_mapping.long_url,
                            tracing_code=tracing_code,
                            tracing_url=tracing_url,
                            )
@@ -51,7 +50,7 @@ def redirect_url(tracing_code):
 
     url_mapping = UrlMapping.query.filter_by(
         tracing_code=tracing_code).first_or_404()
-    info = get_client_information(request)
+    info = get_client_info(request)
 
     # create record
     new_record = TracingRecord(tracing_code=tracing_code,
@@ -69,12 +68,8 @@ def admin():
     if session.get('logged_in'):
         url_mapping = UrlMapping.query.all()
         for i, url in enumerate(url_mapping):
-            tracing_code = url.short_url.replace(
-                app.config["HOST"]+"/", "")
-            url_mapping[i].tracing_url = '{}/trace/{}'.format(
-                app.config["HOST"], tracing_code)
-            url_mapping[i].created_time = url_mapping[i].created_time.strftime(
-                '%Y-%m-%d %H:%M:%S')
+            url_mapping[i].short_url = make_short_url(url.tracing_code)
+            url_mapping[i].created_time = date_str(url_mapping[i].created_time)
         return render_template("admin.html", url_mapping=url_mapping)
     else:
         return redirect(url_for("login"), code=302)

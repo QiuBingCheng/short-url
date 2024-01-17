@@ -1,7 +1,5 @@
 from app import db
 import datetime
-import base62
-import random
 
 
 class ModelBase():
@@ -43,17 +41,6 @@ class UrlMapping(db.Model, ModelBase):
     def __init__(self, tracing_code, long_url):
         self.tracing_code = tracing_code
         self.long_url = long_url
-
-    @classmethod
-    def get_max_id(cls):
-        url = db.session.query(db.func.max(cls.Id)).first()
-        return url[0]+1 if url[0] is not None else 1
-
-    @classmethod
-    def next_token(self):
-        max_id = UrlMapping.get_max_id()
-        token = base62.encode(max_id+random.randint(10000, 20000))
-        return token
 
 
 class TracingRecord(db.Model, ModelBase):
