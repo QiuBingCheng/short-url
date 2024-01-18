@@ -39,14 +39,19 @@ class User(db.Model, ModelBase):
     username = db.Column(db.String(80), nullable=False)
     email = db.Column(db.String(120), unique=True, nullable=False)
     password_hash = db.Column(db.String(128), nullable=False)
+    role = db.Column(db.String(20), default='user', nullable=False)
 
     # Define the one-to-many relationship
     url_mappings = db.relationship('UrlMapping', backref='user', lazy=True)
 
-    def __init__(self, username, email, password):
+    def __init__(self, username, email, password, role=None):
         self.username = username
         self.email = email
         self.set_password(password)
+        self.role = role
+
+    def __repr__(self):
+        return f"<User id={self.id}, username={self.username}, email={self.email}>"
 
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)
@@ -73,6 +78,9 @@ class UrlMapping(db.Model, ModelBase):
         self.tracing_code = tracing_code
         self.long_url = long_url
 
+    def __repr__(self):
+        return f"<UrlMapping id={self.id}, tracing_code={self.tracing_code}>"
+
 
 class TracingRecord(db.Model, ModelBase):
     __tablename__ = 'tracing_record'
@@ -93,3 +101,6 @@ class TracingRecord(db.Model, ModelBase):
         self.port = port
         self.location = location
         self.user_agent = user_agent
+
+    def __repr__(self):
+        return f"<TracingRecord tracing_code={self.tracing_code}, ip={self.ip}>, port={self.port} ,Time={self.created_time}>"

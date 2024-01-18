@@ -5,22 +5,21 @@ from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from google.cloud.sql.connector import Connector, IPTypes
-from dotenv import load_dotenv
 import os
 import logging
 # %%
 logging.basicConfig(level=logging.INFO)
 # %%
 app = Flask(__name__)
-app.config.from_object('app.settings')
 
-# Update config if it is in env
-load_dotenv(override=True)
-for key in app.config:
-    value = os.getenv(key)
-    if value is not None:
-        logging.info(f"{app.config[key]} => {value}")
-        app.config[key] = value
+# env = os.environ.get('ENV', 'development')
+env = "production"
+if env == "development":
+    app.config.from_object('app.local_settings')
+elif env == "production":
+    app.config.from_object('app.settings')
+else:
+    raise Exception("ENV error")
 
 app.secret_key = app.config["SECRET_KEY"]
 

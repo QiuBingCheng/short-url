@@ -6,7 +6,7 @@ __pycache__/
 # C extensions
 *.so
 ngrok.exe
-local_settings.py
+settings.py
 shorturl001-8d9297185727.json
 
 # Distribution / packaging
