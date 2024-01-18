@@ -7,7 +7,9 @@ from flask_migrate import Migrate
 from google.cloud.sql.connector import Connector, IPTypes
 from dotenv import load_dotenv
 import os
-
+import logging
+# %%
+logging.basicConfig(level=logging.INFO)
 # %%
 app = Flask(__name__)
 app.config.from_object('app.settings')
@@ -17,7 +19,7 @@ load_dotenv(override=True)
 for key in app.config:
     value = os.getenv(key)
     if value is not None:
-        print(f"{app.config[key]} => {value}")
+        logging.info(f"{app.config[key]} => {value}")
         app.config[key] = value
 
 app.secret_key = app.config["SECRET_KEY"]

@@ -1,14 +1,15 @@
 from app import db
 import datetime
+from werkzeug.security import generate_password_hash, check_password_hash
 
 
 class ModelBase():
 
-    Id = db.Column(db.Integer, primary_key=True,
+    id = db.Column(db.Integer, primary_key=True,
                    autoincrement=True, unique=True, index=True)
     created_time = db.Column(db.DateTime, default=datetime.datetime.now)
 
-    def toDict(self):
+    def to_dict(self):
         return {key: getattr(self, key) for key in self.__table__.columns.keys()}
 
     def save(self):
@@ -32,13 +33,43 @@ class ModelBase():
             return True, 0
 
 
+class User(db.Model, ModelBase):
+    __tablename__ = 'user'
+
+    username = db.Column(db.String(80), nullable=False)
+    email = db.Column(db.String(120), unique=True, nullable=False)
+    password_hash = db.Column(db.String(128), nullable=False)
+
+    # Define the one-to-many relationship
+    url_mappings = db.relationship('UrlMapping', backref='user', lazy=True)
+
+    def __init__(self, username, email, password):
+        self.username = username
+        self.email = email
+        self.set_password(password)
+
+    def set_password(self, password):
+        self.password_hash = generate_password_hash(password)
+
+    def check_password(self, password):
+        return check_password_hash(self.password_hash, password)
+
+
 class UrlMapping(db.Model, ModelBase):
     __tablename__ = 'url_mapping'
 
-    tracing_code = db.Column(db.String(64))
-    long_url = db.Column(db.String(512))
+    tracing_code = db.Column(db.String(64), unique=True, nullable=False)
+    long_url = db.Column(db.String(512), nullable=False)
 
-    def __init__(self, tracing_code, long_url):
+    # Define the foreign key relationship
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+
+    # Define the one-to-many relationship
+    tracing_record = db.relationship(
+        'TracingRecord', backref='url_mapping', lazy=True)
+
+    def __init__(self, tracing_code, long_url, user_id):
+        self.user_id = user_id
         self.tracing_code = tracing_code
         self.long_url = long_url
 
@@ -46,11 +77,14 @@ class UrlMapping(db.Model, ModelBase):
 class TracingRecord(db.Model, ModelBase):
     __tablename__ = 'tracing_record'
 
-    tracing_code = db.Column(db.String(64))
-    ip = db.Column(db.String(64))
-    port = db.Column(db.String(8))
+    ip = db.Column(db.String(64), nullable=False)
+    port = db.Column(db.String(8), nullable=False)
     location = db.Column(db.String(25))
     user_agent = db.Column(db.String(256))
+
+    # Define the foreign key relationship
+    tracing_code = db.Column(db.String(64), db.ForeignKey(
+        'url_mapping.tracing_code'), unique=True, nullable=False)
 
     def __init__(self, tracing_code, ip, port, location, user_agent
                  ):
