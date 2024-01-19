@@ -14,9 +14,9 @@ class InitDataCommand(Command):
 
 def init_data():
     # anonymous user data
-    delete_one_record(User, {"email": "fake@gmail.com"})
-    user = User(username="anonymous", password="123456",
-                email="fake@gmail.com")
+    delete_one_record(User, {"email": app.config["ANONY_MAIL"]})
+    user = User(username=app.config["ANONY_NAME"], password=app.config["ANONY_PASS"],
+                email=app.config["ANONY_MAIL"])
     user.save()
 
     # admin user data

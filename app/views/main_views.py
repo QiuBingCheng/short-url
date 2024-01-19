@@ -4,16 +4,18 @@ from app.database.models import UrlMapping, TracingRecord
 from app import app
 from app.lib.util import is_admin, date_str, make_short_url, make_tracing_url
 from app.lib.request_parser import get_client_info
-from app.lib.db_operation import next_token
+from app.lib.db_operation import next_token, anonymous_user_id
 
 
 @app.route('/', methods=('GET', 'POST'))
 def home():
     if request.method == 'POST':
-
         url = request.form['url']
         token = next_token()
-        user = UrlMapping(token, url)
+
+        # If user not logged in, default anonymous user will be used to store the mapping results.
+        id_ = anonymous_user_id()
+        user = UrlMapping(tracing_code=token, long_url=url, user_id=id_)
         user.save()
         return redirect(url_for("trace", tracing_code=token))
 

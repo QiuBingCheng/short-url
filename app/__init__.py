@@ -5,7 +5,6 @@ from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from google.cloud.sql.connector import Connector, IPTypes
-import os
 import logging
 # %%
 logging.basicConfig(level=logging.INFO)
@@ -13,6 +12,7 @@ logging.basicConfig(level=logging.INFO)
 app = Flask(__name__)
 
 # env = os.environ.get('ENV', 'development')
+
 env = "production"
 if env == "development":
     app.config.from_object('app.local_settings')
