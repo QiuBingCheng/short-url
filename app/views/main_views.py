@@ -13,7 +13,7 @@ def home():
         url = request.form['url']
         token = next_token()
 
-        # If user not logged in, default anonymous user will be used to store the mapping results.
+        # If user not logged in, default anonymous user will be used to store the mapping record.
         id_ = anonymous_user_id()
         user = UrlMapping(tracing_code=token, long_url=url, user_id=id_)
         user.save()
@@ -71,6 +71,7 @@ def admin():
         url_mapping = UrlMapping.query.all()
         for i, url in enumerate(url_mapping):
             url_mapping[i].short_url = make_short_url(url.tracing_code)
+            url_mapping[i].tracing_url = make_tracing_url(url.tracing_code)
             url_mapping[i].created_time = date_str(url_mapping[i].created_time)
         return render_template("admin.html", url_mapping=url_mapping)
     else:
