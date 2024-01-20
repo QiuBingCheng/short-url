@@ -5,6 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>admin</title>
+    <link type="text/css" rel="stylesheet" href={{ url_for('static', filename='common/style.css' )}}>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.3.1/dist/css/bootstrap.min.css" />
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.2/css/all.css">
@@ -16,19 +17,9 @@
     <script src="https://code.jquery.com/jquery-3.5.1.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <style>
-        .fa-medium-m,
-        .fa-github {
-            color: aliceblue;
-        }
-
         .container-fluid {
             margin-top: 25px;
             width: 100%;
-        }
-
-        h1,
-        .table {
-            color: #2c3e50;
         }
 
         .table>tbody>tr>th {
@@ -39,22 +30,6 @@
         .table th {
             vertical-align: middle;
             font-size: 16px;
-        }
-
-        .warp {
-            width: 100%;
-            white-space: normal;
-            word-wrap: break-word;
-            word-break: break-all;
-        }
-
-        .navbar {
-            font-weight: 500;
-            font-size: 20px;
-        }
-
-        .default-color {
-            background-color: #17a2b8 !important;
         }
     </style>
 </head>
@@ -85,6 +60,11 @@
             <li class="nav-item">
                 <a class="nav-link waves-effect waves-light" href="https://github.com/QiuBingCheng">
                     <i class="fab fa-github"></i>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link waves-effect waves-light" href="https://linkedin.com/in/邱秉誠">
+                    <i class="fab fa-linkedin"></i>
                 </a>
             </li>
         </ul>
