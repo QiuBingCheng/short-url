@@ -82,7 +82,9 @@
               title: 'Oops...',
               text: '使用者名稱或者密碼錯誤 ~',
           })
+          return
       }
+      window.location.href = "/admin";
     });
 
     function validateInputFormat(formdata){

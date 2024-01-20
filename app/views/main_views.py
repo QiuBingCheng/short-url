@@ -14,15 +14,32 @@ SUCCESS = "success"
 
 @app.route('/', methods=('GET', 'POST'))
 def home():
+
+    if request.method == 'GET':
+        username = "訪客"
+        logged = False
+
+        if session.get('logged_in'):
+            logged = True
+            username = session.get("username")
+
+        return render_template('index.html', logged=logged, username=username)
+
     if request.method == 'POST':
-        url = request.form['url']
+        long_url = request.form['long_url']
         token = next_token()
 
         # If user not logged in, default anonymous user will be used to store the mapping record.
-        id_ = anonymous_user_id()
-        user = UrlMapping(tracing_code=token, long_url=url, user_id=id_)
+
+        if session.get('logged_in'):
+            id_ = session.get('user_id')
+        else:
+            id_ = anonymous_user_id()
+
+        user = UrlMapping(tracing_code=token, long_url=long_url, user_id=id_)
         user.save()
-        return redirect(url_for("trace", tracing_code=token))
+        short_url = make_short_url(token)
+        return jsonify({"short_url": short_url})
 
     return render_template('index.html')
 
@@ -73,7 +90,8 @@ def redirect_url(tracing_code):
 @app.route("/admin", methods=["GET"])
 def admin():
     if session.get('logged_in'):
-        url_mapping = UrlMapping.query.all()
+        url_mapping = UrlMapping.query.filter_by(
+            user_id=session["user_id"]).all()
         for i, url in enumerate(url_mapping):
             url_mapping[i].short_url = make_short_url(url.tracing_code)
             url_mapping[i].tracing_url = make_tracing_url(url.tracing_code)
@@ -100,6 +118,9 @@ def login():
             print("password is not correct.")
             return jsonify(FAIL)
 
+        session["logged_in"] = True
+        session["user_id"] = user.id
+        session["username"] = user.username
         return jsonify(SUCCESS)
     else:
         return render_template("login.html")
