@@ -2,50 +2,101 @@
 
 <head>
   <!-- Material Design Bootstrap -->
-  <link type="text/css" rel="stylesheet" href={{ url_for('static', filename='admin/style.css')}}>
-  <link href="https://cdnjs.cloudflare.com/ajax/libs/mdbootstrap/4.19.0/css/mdb.min.css" rel="stylesheet">
-  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@9"></script>
-  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
-
+  <link type="text/css" rel="stylesheet" href={{ url_for('static', filename='login/style.css' )}}>
+  <link href="//maxcdn.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css" rel="stylesheet" id="bootstrap-css">
+  <script src="//maxcdn.bootstrapcdn.com/bootstrap/4.1.1/js/bootstrap.min.js"></script>
+  <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </head>
 
 <body>
-  <div class="wrapper fadeInDown">
-    <div id="formContent">
-      <!-- Tabs Titles -->
-      <!-- Login Form -->
-      <form action="/admin" id="loginForm">
-        <input type="text" class="fadeIn second" name="username" placeholder="username">
-        <input type="text" class="fadeIn third" name="password" placeholder="password">
-        <input type="button" class="fadeIn fourth" value="Login in" id="login">
-      </form>
+  <div id="login">
+    <h3 class="text-center text-white pt-5">登入表單</h3>
+    <div class="container">
+      <div id="login-row" class="row justify-content-center align-items-center">
+        <div id="login-column" class="col-md-6">
+          <div id="login-box" class="col-md-12">
+            <form id="login-form" class="form" action="/login" method="post">
+              <h3 class="text-center text-info">會員登入</h3>
+              <div class="form-group">
+                <label for="username" class="text-info">使用者名稱:</label><br>
+                <input type="text" name="username" id="username" class="form-control">
+              </div>
+              <div class="form-group">
+                <label for="password" class="text-info">密碼:</label><br>
+                <input type="text" name="password" id="password" class="form-control">
+              </div>
+              <div class="form-group">
+                <label for="remember-me" class="text-info"><span>記住我</span>&nbsp<span><input id="remember-me"
+                      name="remember-me" type="checkbox"></span></label><br>
+                <input type="submit" name="submit" class="btn btn-info btn-md" value="送出">
+              </div>
+              <div id="register-link" class="text-right">
+                <a href="#" class="text-info">申請帳號</a>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </body>
+
 <script type=text/javascript>
  $SCRIPT_ROOT = {{ request.script_root|tojson|safe }};
+ SUCCESS = "success"
+ FAIL = "fail"
 
-$(function() {
-    $('#login').bind('click', function() {
-      $.getJSON($SCRIPT_ROOT+"/validate", {
+ $(document).ready(function () {
+
+    $('#login-form').submit(async function (event) {
+
+      event.preventDefault();
+     
+      const formData =  {
         username: $('input[name="username"]').val(),
         password: $('input[name="password"]').val()
-      }, function(data) {
-          console.log(data)
-          if (data=="success")
-            document.getElementById("loginForm").submit()
-          else{
-            Swal.fire({
+      }
+
+      let result = validateInputFormat(formData)
+      if (!result[0]){
+        Swal.fire({
                 icon: 'error',
                 title: 'Oops...',
-                text: '帳密錯誤',
+                text: result[1],
             })
-          }
-            
-      });
-      return false;
+        return 
+      }
+
+      const action = $('#login-form').attr('action')
+      result = await axios.post(action, formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data'
+      }
+      })
+      console.log(result)
+      if (result.data === FAIL){
+        Swal.fire({
+              icon: 'error',
+              title: 'Oops...',
+              text: '使用者名稱或者密碼錯誤 ~',
+          })
+      }
     });
-  });
+
+    function validateInputFormat(formdata){
+      console.log("validateInputFormat")
+      if (formdata["username"] === ""){
+        return [false,"使用者帳號不能為空 ~"]
+      }
+      if (formdata["password"] === ""){
+        return [false,"使用者密碼不能為空 ~"]
+      }
+      return [true]
+    }
+
+});
 </script>
 
 </html>

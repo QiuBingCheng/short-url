@@ -1,6 +1,6 @@
 
 from flask import request, render_template, jsonify, redirect, url_for, session
-from app.database.models import UrlMapping, TracingRecord
+from app.database.models import UrlMapping, TracingRecord, User
 from app import app
 from app.lib.util import is_admin, date_str, make_short_url, make_tracing_url
 from app.lib.request_parser import get_client_info
@@ -83,22 +83,26 @@ def admin():
         return redirect(url_for("login"), code=302)
 
 
-@app.route("/login", methods=["GET"])
+@app.route("/login", methods=["GET", "POST"])
 def login():
-    return render_template("login.html")
+    if request.method == 'POST':
+        print(request.form)
+        username = request.form['username']
+        password = request.form['password']
 
+        user = User.query.filter_by(username=username).first()
+        if user is None:
+            print(f"{username} doesn't exist in database")
+            return jsonify(FAIL)
 
-@app.route("/validate", methods=["GET"])
-def validate_user():
-    username = request.args.get("username")
-    password = request.args.get("password")
+        result = user.check_password(password)
+        if not result:
+            print("password is not correct.")
+            return jsonify(FAIL)
 
-    if is_admin(username, password):
-        session.permanent = True
-        session["logged_in"] = True
-        return jsonify("success")
+        return jsonify(SUCCESS)
     else:
-        return jsonify("fail!")
+        return render_template("login.html")
 
 
 @app.route("/logout")
