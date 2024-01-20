@@ -14,8 +14,13 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.5.0/css/bootstrap.min.css" rel="stylesheet">
     <!-- Material Design Bootstrap -->
     <script src="https://code.jquery.com/jquery-3.5.1.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@9"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <style>
+        .fa-medium-m,
+        .fa-github {
+            color: aliceblue;
+        }
+
         .container-fluid {
             margin-top: 25px;
             width: 100%;
@@ -45,6 +50,7 @@
 
         .navbar {
             font-weight: 500;
+            font-size: 20px;
         }
 
         .default-color {
@@ -61,11 +67,11 @@
     <div class="collapse navbar-collapse" id="navbarSupportedContent-3">
         <ul class="navbar-nav mr-auto">
             <li class="nav-item">
-                <a class="nav-link waves-effect waves-light" href="/">Home
+                <a class="nav-link waves-effect waves-light" href="/">首頁
                 </a>
             </li>
             <li class="nav-item active">
-                <a class="nav-link waves-effect waves-light" href="#">Admin
+                <a class="nav-link waves-effect waves-light" href="#">管理
                     <span class="sr-only">(current)</span>
                 </a>
             </li>
@@ -116,48 +122,60 @@
     </div>
 </section>
 <script type=text/javascript>
+    $(document).ready(function() {
 
-        $('#datatables tbody').on('click', 'a.delete', function () {
-            console.log("delete_ajax")
+        const FAIL = "fail"
+        const SUCCESS = "success"
+        
+        // Attach a click event listener to all elements with the class 'myLink'
+        $('.delete').on('click', function(event) {
+            console.log("A click on .delete happend")
+            const urlId = event.target.id;
+            console.log("urlId",urlId)
+            confirmAndDeleteById(urlId);
+        });
 
-            const urlId = this.id
+        function confirmAndDeleteById(urlId){
+            console.log("confirmAndDeleteById is called")
+
             const short_url = $("#shortURL"+urlId).text()
-           
-            Swal({
+
+            Swal.fire({
                 title: "Are you sure?",
-                text: `Sure to delete the record?\n${short_url}`,
+                html: `Sure to delete the record?<br>${short_url}`,
                 icon: "warning",
-                buttons: [
-                    'No, cancel it!',
-                    'Yes, I am sure!'
-                ],
-                dangerMode: true,
-                }).then(function(isConfirm) {
+                showCancelButton: true,
+                confirmButtonColor: "#3085d6",
+                cancelButtonColor: "#d33",
+                confirmButtonText: "Yes, delete it!"
+                }).then((result) => {
+                     
+                    if (result.isConfirmed)
+                        deleteById(urlId)
+                })
+        }
 
-                    if (isConfirm) {
+        function deleteById(urlId){
+            console.log("deleteById is called")
+            $.getJSON("/delete_record", {
+                    id: urlId
+                }, function(data) {
 
-                    $.getJSON("/delete_ajax", {
-                        Id: urlId
-                    }, function(data) {
-
-                    if (data=="success"){
-                        var row = $("#row"+urlId);
-                        console.log(row);
-                        row.remove();
-                    }
-                    else{
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'Oops...',
-                            text: '發生錯誤',
-                        })
-                    }
+                if (data==SUCCESS){
+                    var row = $("#row"+urlId);
+                    console.log(row);
+                    row.remove();
+                }
+                else{
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Oops...',
+                        text: '發生錯誤，請通知網站維護人員',
                     })
                 }
-        })
-    })
-            
-      return false;
+            })
+        }
+    });
     </script>
 
 </html>

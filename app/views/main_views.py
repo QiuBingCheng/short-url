@@ -4,7 +4,12 @@ from app.database.models import UrlMapping, TracingRecord
 from app import app
 from app.lib.util import is_admin, date_str, make_short_url, make_tracing_url
 from app.lib.request_parser import get_client_info
-from app.lib.db_operation import next_token, anonymous_user_id
+from app.lib.db_operation import (next_token, anonymous_user_id,
+                                  delete_records,
+                                  get_record_by_id)
+
+FAIL = "fail"
+SUCCESS = "success"
 
 
 @app.route('/', methods=('GET', 'POST'))
@@ -102,28 +107,28 @@ def logout():
     return redirect(url_for("login"), code=302)
 
 
-@app.route("/delete_ajax", methods=["GET"])
-def delete_ajax():
+@app.route("/delete_record", methods=["GET"])
+def delete_record():
     if not session.get('logged_in'):
         return redirect(url_for("login"), code=302)
 
-    try:
-        Id = int(request.args.get("Id"))
-        url = UrlMapping.query.get(Id)
-        tracing_code = url.short_url.replace(
-            app.config["HOST"]+"/", "")
-        records = TracingRecord.query.filter_by(
-            tracing_code=tracing_code).all()
+    id = int(request.args.get("id"))
+    # Delete related tracing records at first
+    url_mapping_record = get_record_by_id(UrlMapping, id)
+    if url_mapping_record is None:
+        return jsonify(FAIL)
 
-        # delete mapping and records
-        url.delete()
-        for record in records:
-            record.delete()
+    result = delete_records(
+        TracingRecord, {"tracing_code": url_mapping_record.tracing_code})
 
-        return jsonify("success")
-    except Exception as e:
-        print(str(e))
-        return jsonify("fail!")
+    if not result:
+        return jsonify(FAIL)
+
+    result = delete_records(UrlMapping, {"id": id})
+    if not result:
+        return jsonify(FAIL)
+
+    return jsonify(SUCCESS)
 
 
 @app.errorhandler(404)
