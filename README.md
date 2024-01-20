@@ -1,4 +1,4 @@
-# Url Shortener
+# URL Shortener
 
 ## Introduction
 
@@ -22,10 +22,13 @@ pip install -r requirements.txt
 ```
 # Create DB tables
 python manage.py init_db
+
+# Init table data
+python manage.py init_data
 ```
 
 ## Running the app
 ```
 # Start the Flask development web server
-python manage.py runserver
+python run.py
 ```
