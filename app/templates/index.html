@@ -20,8 +20,18 @@
         integrity="sha384-Fy6S3B9q64WdZWQUiU+q4/2Lc9npb8tCaSX9FK7E8HnRr0Jz8D6OP9dO5Vg3Q9ct"
         crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
-
     <style>
+        .container {
+            min-height: 80vh;
+            flex-direction: column;
+        }
+
+        .footer {
+            margin-top: auto;
+            background-color: #f8f9fa;
+            padding: 10px;
+        }
+
         button {
             margin-top: 15px
         }
@@ -29,6 +39,8 @@
         h1 {
             color: #2c3e50;
         }
+
+
 
         .container {
             text-align: center;
@@ -48,90 +60,90 @@
         }
     </style>
 </head>
-<nav class="mb-1 navbar navbar-expand-lg navbar-dark default-color">
-    <a class="navbar-brand" href="#">IP TRACER</a>
-    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent-3"
-        aria-controls="navbarSupportedContent-3" aria-expanded="false" aria-label="Toggle navigation">
-        <span class="navbar-toggler-icon"></span>
-    </button>
-    <div class="collapse navbar-collapse" id="navbarSupportedContent-3">
-        <ul class="navbar-nav mr-auto">
-            <li class="nav-item active">
-                <a class="nav-link waves-effect waves-light" href="#">首頁
-                    <span class="sr-only">(current)</span>
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link waves-effect waves-light" href="/admin">管理
-                </a>
-            </li>
-        </ul>
-        <ul class="navbar-nav ml-auto nav-flex-icons">
-            <li class="nav-item">
-                <a class="nav-link waves-effect waves-light" href="https://medium.com/@carrot-cheng">
-                    <i class="fab fa-medium-m"></i>
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link waves-effect waves-light" href="https://github.com/QiuBingCheng">
-                    <i class="fab fa-github"></i>
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link waves-effect waves-light" href="https://linkedin.com/in/邱秉誠">
-                    <i class="fab fa-linkedin"></i>
-                </a>
-            </li>
-        </ul>
-    </div>
-</nav>
-<section>
-    <div class="container" padding-top>
-        <div class="col-md-10">
-            <h1>縮短網址</h1>
-            <h4>嗨 {{ username }} <i class="far fa-smile"></i>。<a href="/sing">加入會員</a>可以管理短網址的資訊哦 ~</h4>
-            <!-- The Form -->
-            <form action="/" method="post" id="shortenForm" class="justify-content-center">
-                <div class="input-group-lg">
-                    <input id="shortenBox" name="url" type="text" autofocus="autofocus" class="form-control input-cls"
-                        placeholder="輸入欲縮短的合法網址">
-                </div>
-                <p style="text-align: left;margin-bottom:0px">短網址：<a id="shortUrl" href="#">#</a></p>
-                <div class="form-group col-xs-12">
-                    <button type="button" id="shortenBtn" class="btn btn-info"
-                        style="margin-right: 10px;border-color: azure;" onclick="shortenUrlForm()">縮短網址
-                        <span id="loadingIcon" class="spinner-border spinner-border-sm" role="status" hidden></span>
-                    </button>
 
-                </div>
+<body>
+    <nav class="mb-1 navbar navbar-expand-lg navbar-dark default-color">
+        <a class="navbar-brand" href="#">IP TRACER</a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent-3"
+            aria-controls="navbarSupportedContent-3" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarSupportedContent-3">
+            <ul class="navbar-nav mr-auto">
+                <li class="nav-item active">
+                    <a class="nav-link waves-effect waves-light" href="#">首頁
+                        <span class="sr-only">(current)</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link waves-effect waves-light" href="/admin">管理
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </nav>
+    <section>
+        <div class="container" padding-top>
+            <div class="col-md-10">
+                <h1>縮短網址</h1>
+                {% if logged and is_active %}
+                <h4>嗨 {{ username }} <i class="far fa-smile"></i></h4>
+                {% elif logged %}
+                <h4>嗨 {{ username }} <i class="far fa-smile"></i>。記得到信箱收驗證信才能管理短網址的資訊哦 ~</h4>
+                {% else %}
+                <h4>嗨 {{ username }} <i class="far fa-smile"></i>。<a href="/login">登入會員</a>才可收藏並管理短網址的資訊哦 ~</h4>
+                {% endif %}
+                <!-- The Form -->
+                <form action="/" method="post" id="shortenForm" class="justify-content-center">
+                    <div class="input-group-lg">
+                        <input id="shortenBox" name="url" type="text" autofocus="autofocus"
+                            class="form-control input-cls" placeholder="輸入欲縮短的合法網址">
+                    </div>
+                    <p style="text-align: left;margin-bottom:0px">短網址：<a id="shortUrl" href="#">#</a></p>
+                    <div class="form-group col-xs-12">
+                        <button type="button" id="shortenBtn" class="btn btn-info"
+                            style="margin-right: 10px;border-color: azure;" onclick="shortenUrlForm()">縮短網址
+                            <span id="loadingIcon" class="spinner-border spinner-border-sm" role="status" hidden></span>
+                        </button>
 
-            </form>
-            <!-- The Modal -->
-            <div class="modal" id="myModal">
-                <div class="modal-dialog">
-                    <div class="modal-content">
+                    </div>
 
-                        <!-- Modal Header -->
-                        <div class="modal-header">
-                            <h4 class="modal-title">匿名的訪客 建立一條短網址</h4>
-                            <button type="button" class="close" data-dismiss="modal">&times;</button>
+                </form>
+                <!-- The Modal -->
+                <div class="modal" id="myModal">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+
+                            <!-- Modal Header -->
+                            <div class="modal-header">
+                                <h4 class="modal-title">{{username}} 建立一條短網址</h4>
+                                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                            </div>
+
+                            <!-- Modal body -->
+                            <div class="modal-body">
+                                <p id="modelText"></p>
+                            </div>
+                            <!-- Modal footer -->
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-danger" data-dismiss="modal">Close</button>
+                            </div>
+
                         </div>
-
-                        <!-- Modal body -->
-                        <div class="modal-body">
-                            <p id="modelText"></p>
-                        </div>
-                        <!-- Modal footer -->
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-danger" data-dismiss="modal">Close</button>
-                        </div>
-
                     </div>
                 </div>
             </div>
         </div>
-    </div>
-</section>
+    </section>
+</body>
+<footer class="footer d-flex justify-content-end">
+    <!-- Linkedin -->
+    <a class="btn text-white btn-floating m-1" style="background-color: #0082ca;" href="#!" role="button"><i
+            class="fab fa-linkedin-in"></i></a>
+    <!-- Github -->
+    <a class="btn text-white btn-floating m-1" style="background-color: #333333; margin-left: auto;" href="#!"
+        role="button"><i class="fab fa-github"></i></a>
+</footer>
 <script type="text/javascript">
 
 

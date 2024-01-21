@@ -1,6 +1,7 @@
 from app import db
 import datetime
 from werkzeug.security import generate_password_hash, check_password_hash
+from flask_login import UserMixin
 
 
 class ModelBase():
@@ -33,12 +34,16 @@ class ModelBase():
             return True, 0
 
 
-class User(db.Model, ModelBase):
+class User(UserMixin, db.Model, ModelBase):
     __tablename__ = 'user'
-
+    id = db.Column(db.Integer, primary_key=True,
+                   autoincrement=True, unique=True, index=True)
     username = db.Column(db.String(80), unique=True, nullable=False)
+    created_time = db.Column(db.DateTime, default=datetime.datetime.now)
     email = db.Column(db.String(120), unique=True, nullable=False)
     password_hash = db.Column(db.String(128), nullable=False)
+    is_active = db.Column(db.Boolean, default=False)
+    activated_time = db.Column(db.DateTime, default=None)
     role = db.Column(db.String(20), default='user', nullable=False)
 
     # Define the one-to-many relationship
@@ -51,7 +56,7 @@ class User(db.Model, ModelBase):
         self.role = role
 
     def __repr__(self):
-        return f"<User id={self.id}, username={self.username}, email={self.email}>"
+        return f"<User id={self.id}, email={self.email}>"
 
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)
@@ -103,4 +108,4 @@ class TracingRecord(db.Model, ModelBase):
         self.user_agent = user_agent
 
     def __repr__(self):
-        return f"<TracingRecord tracing_code={self.tracing_code}, ip={self.ip}>, port={self.port} ,Time={self.created_time}>"
+        return f"<TracingRecord tracing_code={self.tracing_code}, created_time={self.created_time}>"
