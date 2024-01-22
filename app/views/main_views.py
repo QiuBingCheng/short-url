@@ -20,13 +20,13 @@ SUCCESS = "success"
 def home():
 
     if request.method == 'GET':
+
         username = "訪客"
         logged = False
 
-        print("current_user", current_user)
-        if current_user:
-            username = current_user.username
+        if not current_user.is_anonymous:
             logged = True
+            username = current_user.username
 
         return render_template('index.html', logged=logged,
                                username=username,
