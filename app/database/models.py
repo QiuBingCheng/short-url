@@ -1,14 +1,17 @@
 from app import db
-import datetime
+from datetime import datetime
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import UserMixin
+import pytz
+
+TIME_ZONE = pytz.timezone('Asia/Taipei')
 
 
 class ModelBase():
 
     id = db.Column(db.Integer, primary_key=True,
                    autoincrement=True, unique=True, index=True)
-    created_time = db.Column(db.DateTime, default=datetime.datetime.now)
+    created_time = db.Column(db.DateTime, default=datetime.now(TIME_ZONE))
 
     def to_dict(self):
         return {key: getattr(self, key) for key in self.__table__.columns.keys()}
@@ -36,10 +39,8 @@ class ModelBase():
 
 class User(UserMixin, db.Model, ModelBase):
     __tablename__ = 'user'
-    id = db.Column(db.Integer, primary_key=True,
-                   autoincrement=True, unique=True, index=True)
+
     username = db.Column(db.String(80), unique=True, nullable=False)
-    created_time = db.Column(db.DateTime, default=datetime.datetime.now)
     email = db.Column(db.String(120), unique=True, nullable=False)
     password_hash = db.Column(db.String(128), nullable=False)
     is_active = db.Column(db.Boolean, default=False)
