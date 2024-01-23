@@ -76,11 +76,18 @@
   function switchLoadingStatus(status) {
         if (status == "start") {
 
-
+            $("#email").prop('disabled', true)
+            $("#username").prop('disabled', true)
+            $("#password").prop('disabled', true)
+            $("#password2").prop('disabled', true)
             $("#submit").prop('disabled', true)
             $("#submit").val("申請中...")
         }
         else if (status == "end") {
+            $("#email").prop('disabled', false)
+            $("#username").prop('disabled', false)
+            $("#password").prop('disabled', false)
+            $("#password2").prop('disabled', false)
             $("#submit").prop('disabled', false)
             $("#submit").val("送出")
         }
