@@ -105,15 +105,14 @@
       })
       switchLoadingStatus("end")
       console.log(result)
-      if (result.data === FAIL){
+      const data = result.data
+      if (data.flag === FAIL){
         Swal.fire({
               icon: 'error',
               title: 'Oops...',
-              text: '使用者名稱或者密碼錯誤 ~',
+              text: data.msg,
           })
-          return
       }
-      window.location.href = "/admin";
     });
 
     function validateInputFormat(formdata){
