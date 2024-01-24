@@ -23,15 +23,17 @@ def home():
 
         username = "訪客"
         logged = False
+        is_confirmed = False
 
         if not current_user.is_anonymous:
             logged = True
             username = current_user.username
+            is_confirmed = current_user.is_confirmed
 
         print(f"Current user: {current_user}")
         return render_template('index.html', logged=logged,
                                username=username,
-                               is_active=current_user.is_confirmed)
+                               is_confirmed=is_confirmed)
 
     elif request.method == 'POST':
         long_url = request.form['long_url']

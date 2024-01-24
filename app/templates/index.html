@@ -86,7 +86,7 @@
         <div class="container" padding-top>
             <div class="col-md-10">
                 <h1>縮短網址</h1>
-                {% if logged and is_active %}
+                {% if logged and is_confirmed %}
                 <h4>嗨 {{ username }} <i class="far fa-smile"></i>。建立短網址後可以到我的收藏頁面管理哦 ~</h4>
                 {% elif logged %}
                 <h4>嗨 {{ username }} <i class="far fa-smile"></i>。記得到信箱收驗證信才能管理短網址的資訊哦 ~</h4>

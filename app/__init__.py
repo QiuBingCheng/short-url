@@ -26,7 +26,7 @@ login_manager = LoginManager()
 
 
 login_manager.init_app(app)
-login_manager.login_view = "main.login"
+login_manager.login_view = "member.login"
 
 
 @login_manager.user_loader
