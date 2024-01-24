@@ -43,8 +43,8 @@ class User(UserMixin, db.Model, ModelBase):
     username = db.Column(db.String(80), unique=True, nullable=False)
     email = db.Column(db.String(120), unique=True, nullable=False)
     password_hash = db.Column(db.String(128), nullable=False)
-    is_active = db.Column(db.Boolean, default=False)
-    activated_time = db.Column(db.DateTime, default=None)
+    is_confirmed = db.Column(db.Boolean, default=False)
+    confirmed_time = db.Column(db.DateTime, default=None)
     role = db.Column(db.String(20), default='user', nullable=False)
 
     # Define the one-to-many relationship
@@ -85,7 +85,7 @@ class UrlMapping(db.Model, ModelBase):
         self.long_url = long_url
 
     def __repr__(self):
-        return f"<UrlMapping id={self.id}, tracing_code={self.tracing_code}>"
+        return f"<UrlMapping id={self.id}, tracing_code={self.tracing_code}, user_id={self.user_id}>"
 
 
 class TracingRecord(db.Model, ModelBase):
