@@ -113,7 +113,11 @@
               title: 'Oops...',
               text: data.msg,
           })
+          return
       }
+
+      // handle the redirect
+      window.location.href = result.request.responseURL;
     });
 
     function validateInputFormat(formdata){

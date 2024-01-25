@@ -54,7 +54,7 @@ def login():
 @member_blueprint.route("/logout")
 def logout():
     logout_user()
-    return redirect(url_for("main.login"), code=302)
+    return redirect(url_for("member.login"), code=302)
 
 
 @member_blueprint.route('/confirm_email/<token>')
