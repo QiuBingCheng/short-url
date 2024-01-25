@@ -2,6 +2,7 @@
 
 <head>
   <!-- Material Design Bootstrap -->
+  <link type="text/css" rel="stylesheet" href={{ url_for('static', filename='common/style.css' )}}>
   <link href="//maxcdn.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css" rel="stylesheet" id="bootstrap-css">
   <script src="//maxcdn.bootstrapcdn.com/bootstrap/4.1.1/js/bootstrap.min.js"></script>
   <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
@@ -19,6 +20,25 @@
 </style>
 
 <body>
+  <nav class="mb-1 navbar navbar-expand-lg navbar-dark default-color">
+    <a class="navbar-brand" href="#">IP TRACER</a>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent-3"
+      aria-controls="navbarSupportedContent-3" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarSupportedContent-3">
+      <ul class="navbar-nav mr-auto">
+        <li class="nav-item">
+          <a class="nav-link waves-effect waves-light" href="/">首頁
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link">我的收藏
+          </a>
+        </li>
+      </ul>
+    </div>
+  </nav>
   <div id="register">
     <h3 class="text-center text-white pt-5">登入表單</h3>
     <div class="container">
