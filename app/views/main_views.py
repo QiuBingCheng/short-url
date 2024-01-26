@@ -36,7 +36,8 @@ def home():
                                is_confirmed=is_confirmed)
 
     elif request.method == 'POST':
-        long_url = request.form['long_url']
+        print(request.form)
+        long_url = request.form["long_url"]
         token = generate_tracing_code()
 
         # If user not logged in, admin will be used to store mapping record.
@@ -58,19 +59,30 @@ def home():
 def trace(tracing_code):
     url_mapping = UrlMapping.query.filter_by(
         tracing_code=tracing_code).first_or_404()
+    print(url_mapping)
 
     # query the visit records of the trace
     records_of_the_url = TracingRecord.query.filter_by(
         tracing_code=tracing_code).all()
+
+    modified_records = []
     for record in records_of_the_url:
-        record.date = date_str(record.created_time)
+        # modify some attribure
+        date = date_str(record.created_time)
         latitude, longitude = record.location.split(",")
-        record.latitude = latitude
-        record.longitude = longitude
-        record.user_agent = "".join(
+        user_agent = "".join(
             [s+"#" if s == ")" else s.strip() for s in record.user_agent]).split("#")
 
-    return render_template('track.html', records=records_of_the_url,
+        # store modified record
+        modified_record = record.to_dict()
+        modified_record["latitude"] = latitude
+        modified_record["longitude"] = longitude
+        modified_record["date"] = date
+        modified_record["user_agent"] = user_agent
+
+        modified_records.append(modified_record)
+
+    return render_template('main/track.html', records=modified_records,
                            short_url=make_short_url(tracing_code),
                            long_url=url_mapping.long_url,
                            created_time=url_mapping.created_time
@@ -98,6 +110,7 @@ def redirect_url(tracing_code):
 @main_blueprint.route("/admin", methods=["GET"])
 @login_required
 def admin():
+
     print(current_user)
     print(current_user.url_mappings)
 
