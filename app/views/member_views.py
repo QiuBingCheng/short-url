@@ -48,7 +48,7 @@ def login():
         if current_user.is_authenticated:
             return redirect(url_for("main.home"), code=302)
 
-        return render_template("login.html")
+        return render_template("member/login.html")
 
 
 @member_blueprint.route("/logout")
@@ -98,20 +98,20 @@ def register():
 
             # send mail verification
             token = generate_token(user.email)
-            confirm_url = url_for("main.confirm_email",
+            confirm_url = url_for("member.confirm_email",
                                   token=token, _external=True)
-            html = render_template("confirm_email.html",
+            html = render_template("member/confirm_email.html",
                                    confirm_url=confirm_url)
             subject = "Please confirm your email"
             send_email(user.email, subject, html)
             login_user(user)
-            return redirect(url_for("main.inactive"))
+            return redirect(url_for("member.inactive"))
 
         except Exception as e:
             print(e)
             return jsonify(FAIL)
 
-    return render_template("register.html", code=302)
+    return render_template("member/register.html", code=302)
 
 
 @member_blueprint.route("/inactive")
@@ -119,4 +119,18 @@ def register():
 def inactive():
     if current_user.is_active:
         return redirect(url_for("main.home"))
-    return render_template("inactive.html")
+    return render_template("member/inactive.html")
+
+@member_blueprint.route("/resend")
+@login_required
+def resend_confirmation():
+    if current_user.is_confirmed:
+        return redirect(url_for("main.home"))
+    token = generate_token(current_user.email)
+    confirm_url = url_for("member.confirm_email",
+                          token=token, _external=True)
+    html = render_template("register/confirm_email.html",
+                           confirm_url=confirm_url)
+    subject = "Please confirm your email"
+    send_email(current_user.email, subject, html)
+    return redirect(url_for("member.inactive"))

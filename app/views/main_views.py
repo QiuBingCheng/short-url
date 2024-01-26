@@ -31,7 +31,7 @@ def home():
             is_confirmed = current_user.is_confirmed
 
         print(f"Current user: {current_user}")
-        return render_template('index.html', logged=logged,
+        return render_template('main/index.html', logged=logged,
                                username=username,
                                is_confirmed=is_confirmed)
 
@@ -106,7 +106,7 @@ def admin():
         url_mappings[i].short_url = make_short_url(url.tracing_code)
         url_mappings[i].tracing_url = make_tracing_url(url.tracing_code)
         url_mappings[i].created_time = date_str(url_mappings[i].created_time)
-    return render_template("admin.html", url_mappings=url_mappings)
+    return render_template("main/admin.html", url_mappings=url_mappings)
 
 
 @main_blueprint.route("/delete_record", methods=["GET"])
