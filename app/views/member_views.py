@@ -20,12 +20,18 @@ TIME_ZONE = pytz.timezone('Asia/Taipei')
 def login():
     if request.method == 'POST':
 
-        username = request.form['username']
-        password = request.form['password']
+        username = request.form["username"]
+        password = request.form["password"]
 
+        # perform authentication logic
         user = User.query.filter_by(username=username).first()
         if user is None:
             msg = f"username {username} doesn't exist"
+            print(msg)
+            return jsonify({"flag": FAIL, "msg": msg})
+
+        if not user.is_confirmed:
+            msg = "account is not activated yet"
             print(msg)
             return jsonify({"flag": FAIL, "msg": msg})
 
@@ -35,20 +41,25 @@ def login():
             print(msg)
             return jsonify({"flag": FAIL, "msg": msg})
 
-        if not user.is_active:
-            msg = "account is not activated yet"
-            print(msg)
-            return jsonify({"flag": FAIL, "msg": msg})
+        # After successful login, check the 'next' parameter
+        next_url = request.form["next"]
+        if not next_url or not next_url.startswith('/'):
+            next_url = url_for('main.home')
 
         login_user(user)
         print(f"Successfully logged in.{user}")
-        return redirect(url_for("main.home"), code=302)
+        return redirect(next_url, code=302)
 
     elif request.method == 'GET':
-        if current_user.is_authenticated:
-            return redirect(url_for("main.home"), code=302)
 
-        return render_template("member/login.html")
+        if current_user.is_anonymous:
+            return render_template("member/login.html")
+
+        elif not current_user.is_confirmed:
+            return redirect(url_for("member.inactive"), code=302)
+
+        else:
+            return redirect(url_for("main.home"), code=302)
 
 
 @member_blueprint.route("/logout")
@@ -117,9 +128,12 @@ def register():
 @member_blueprint.route("/inactive")
 @login_required
 def inactive():
-    if current_user.is_active:
+    if current_user.is_confirmed:
         return redirect(url_for("main.home"))
-    return render_template("member/inactive.html")
+
+    return render_template("member/inactive.html",
+                           username=current_user.username)
+
 
 @member_blueprint.route("/resend")
 @login_required
@@ -129,7 +143,7 @@ def resend_confirmation():
     token = generate_token(current_user.email)
     confirm_url = url_for("member.confirm_email",
                           token=token, _external=True)
-    html = render_template("register/confirm_email.html",
+    html = render_template("member/confirm_email.html",
                            confirm_url=confirm_url)
     subject = "Please confirm your email"
     send_email(current_user.email, subject, html)

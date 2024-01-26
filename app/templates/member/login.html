@@ -82,6 +82,9 @@
  $SCRIPT_ROOT = {{ request.script_root|tojson|safe }};
  SUCCESS = "success"
  FAIL = "fail"
+ const urlParams = new URLSearchParams(window.location.search);
+ const nextParam = urlParams.get('next');
+ console.log(nextParam)
 
  $(document).ready(function () {
 
@@ -104,7 +107,8 @@
 
       const formData =  {
         username: $('input[name="username"]').val(),
-        password: $('input[name="password"]').val()
+        password: $('input[name="password"]').val(),
+        next:nextParam
       }
 
       let result = validateInputFormat(formData)
