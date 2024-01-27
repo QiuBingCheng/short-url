@@ -68,9 +68,6 @@
               <div class="col-sm-4">
                 <input id="submit" type="submit" name="submit" class="btn btn-info btn-md" value="送出">
               </div>
-              <div class="col-sm-8 text-right">
-                <p id="vericationHint"></p>
-              </div>
             </div>
           </form>
         </div>
@@ -81,8 +78,6 @@
 
 <script type=text/javascript>
  $SCRIPT_ROOT = {{ request.script_root|tojson|safe }};
- SUCCESS = "success"
- FAIL = "fail"
 
  const validateEmail = (email) => {
       return String(email)
@@ -92,8 +87,32 @@
         );
     };
  $(document).ready(function () {
-  
+
+  function validateInputFormat(formdata){
+      console.log("validateInputFormat")
+
+      if (!validateEmail(formdata["email"])){
+        return [false,"電子信箱格式有誤~"]
+      }
+
+      if (formdata["username"].length <6 ||formdata["username"].length > 12  ){
+        return [false,"使用者名稱長度必須介於 6 ~ 12"]
+      }
+
+      if (formdata["password"].length <8 ||formdata["password"].length >12 ){
+        return [false,"使用者密碼長度必須介於 8 ~ 12"]
+      }
+
+      if (formdata["password"]!=formdata["password2"]){
+        return [false,"密碼與確認密碼不一致"]
+      }
+
+      return [true]
+    }
+
   function switchLoadingStatus(status) {
+        // switch component of form before and after submiting
+        console.log("switchLoadingStatus")
         if (status == "start") {
 
             $("#email").prop('disabled', true)
@@ -102,19 +121,23 @@
             $("#password2").prop('disabled', true)
             $("#submit").prop('disabled', true)
             $("#submit").val("申請中...")
+
         }
         else if (status == "end") {
+
             $("#email").prop('disabled', false)
             $("#username").prop('disabled', false)
             $("#password").prop('disabled', false)
             $("#password2").prop('disabled', false)
             $("#submit").prop('disabled', false)
             $("#submit").val("送出")
+
         }
     }
 
     $('#login-form').submit(async function (event) {
 
+      // check formdata
       event.preventDefault();
       switchLoadingStatus("start")
 
@@ -136,47 +159,38 @@
         return 
       }
 
+      // submit form
       const action = $('#login-form').attr('action')
-      result = await axios.post(action, formData, {
-      headers: {
-        'Content-Type': 'multipart/form-data'
-      }
-      })
-      console.log(result)
-      if (result.data === FAIL){
+      try {
+
+        result = await axios.post(action, formData, {headers: {'Content-Type': 'multipart/form-data'} })
+        Swal.fire(`已寄出驗證連結至 ${formData.email}，請收信以完成申請流程噢 ~`);
+        console.log(result)
+        if (result.request.responseURL !== result.config.url) {
+              const redirectUrl = result.request.responseURL;
+              window.location.href = redirectUrl;
+        }
+
+      } catch (error) {
+
+        // Handle error
+        console.log(error)
         Swal.fire({
-              icon: 'error',
-              title: 'Oops...',
-              text: '出現錯誤，請通知網站維護人員',
+            icon: 'error',
+            title: 'Oops...',
+            text: error.message
           })
-          switchLoadingStatus("end")
-          return
+
+      } finally{
+
+        switchLoadingStatus("end")
+
       }
-      Swal.fire(`已寄出驗證連結至 ${formData.email}，請收信以完成申請流程噢 ~`);
-      $("#vericationHint").text("已送出驗證信件!")
-      switchLoadingStatus("end")
+      
+  
     });
 
-    function validateInputFormat(formdata){
-      console.log("validateInputFormat")
-
-      if (!validateEmail(formdata["email"])){
-        return [false,"電子信箱格式有誤~"]
-      }
-      if (formdata["username"].length <6 ||formdata["username"].length > 12  ){
-        return [false,"使用者名稱長度必須介於 6 ~ 12"]
-      }
-
-      if (formdata["password"].length <8 ||formdata["password"].length >12 ){
-        return [false,"使用者密碼長度必須介於 8 ~ 12"]
-      }
-
-      if (formdata["password"]!=formdata["password2"]){
-        return [false,"密碼與確認密碼不一致"]
-      }
-
-      return [true]
-    }
+   
 
 });
 </script>

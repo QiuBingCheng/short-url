@@ -15,6 +15,7 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.5.0/css/bootstrap.min.css" rel="stylesheet">
     <!-- Material Design Bootstrap -->
     <script src="https://code.jquery.com/jquery-3.5.1.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <style>
         .container-fluid {
@@ -135,25 +136,25 @@
                 })
         }
 
-        function deleteById(urlId){
+        async function deleteById(urlId){
             console.log("deleteById is called")
-            $.getJSON("/delete_record", {
-                    id: urlId
-                }, function(data) {
 
-                if (data==SUCCESS){
-                    var row = $("#row"+urlId);
-                    console.log(row);
-                    row.remove();
-                }
-                else{
-                    Swal.fire({
+           
+            try{
+
+                const params = {id: urlId};
+                const result = await axios.get("/delete_record",{params});
+                var row = $("#row"+urlId);
+                console.log(row);
+                row.remove();
+
+            } catch (error){
+                Swal.fire({
                         icon: 'error',
                         title: 'Oops...',
-                        text: '發生錯誤，請通知網站維護人員',
-                    })
-                }
-            })
+                        text: error.message,
+                 })
+            }
         }
     });
     </script>
