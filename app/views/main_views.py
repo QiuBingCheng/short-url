@@ -111,6 +111,9 @@ def redirect_url(tracing_code):
 @login_required
 def admin():
 
+    if not current_user.is_confirmed:
+        return redirect(url_for("member.inactive"))
+
     print(current_user)
     print(current_user.url_mappings)
 
@@ -123,6 +126,7 @@ def admin():
 
 
 @main_blueprint.route("/delete_record", methods=["GET"])
+@login_required
 def delete_record():
     if current_user is None:
         return redirect(url_for("member.login"), code=302)

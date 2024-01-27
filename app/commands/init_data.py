@@ -23,6 +23,7 @@ def init_data():
     # create admin data
     user = User(username=app.config["USERNAME"],
                 password=app.config["PASSWORD"],
-                email=app.config["MAIL"], role="admin")
+                email=app.config["MAIL"],
+                is_confirmed=True, role="admin")
     user.save()
     logging.info(f"{user} has been added.")

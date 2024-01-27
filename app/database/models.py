@@ -50,11 +50,12 @@ class User(UserMixin, db.Model, ModelBase):
     # Define the one-to-many relationship
     url_mappings = db.relationship('UrlMapping', backref='user', lazy=True)
 
-    def __init__(self, username, email, password, role=None):
+    def __init__(self, username, email, password, role=None, is_confirmed=None):
         self.username = username
         self.email = email
         self.set_password(password)
         self.role = role
+        self.is_confirmed = is_confirmed
 
     def __repr__(self):
         return f"<User id={self.id}, email={self.email}>"

@@ -14,7 +14,6 @@
     <!-- Bootstrap core CSS -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.5.0/css/bootstrap.min.css" rel="stylesheet">
     <!-- Material Design Bootstrap -->
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/mdbootstrap/4.19.1/css/mdb.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@9"></script>
     <style>
         .table>tbody>tr>th {
@@ -45,24 +44,6 @@
                 </a>
             </li>
         </ul>
-        <ul class="navbar-nav ml-auto nav-flex-icons">
-            <li class="nav-item">
-                <a class="nav-link waves-effect waves-light" href="https://medium.com/@carrot-cheng">
-                    <i class="fab fa-medium-m"></i>
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link waves-effect waves-light" href="https://github.com/QiuBingCheng">
-                    <i class="fab fa-github"></i>
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link waves-effect waves-light" href="https://linkedin.com/in/邱秉誠">
-                    <i class="fab fa-linkedin"></i>
-                </a>
-            </li>
-        </ul>
-    </div>
 </nav>
 <section>
     <div class="container" style="padding-top: 3rem!important;">
@@ -81,22 +62,22 @@
                         <td>{{ short_url }}</td>
                     </tr>
                     <tr>
-                        <th scope="row">短連結</th>
+                        <th scope="row">建立時間</th>
                         <td>{{ created_time }}</td>
                     </tr>
 
                 </tbody>
             </table>
 
-            <h1>瀏覽紀錄：{{records|length}}</h1>
+            <h1>瀏覽紀錄 {{records|length}} 筆</h1>
             <table class="table table-bordered table-striped table-hover">
                 <thead>
                     <tr>
-                        <th scope="col" style="width: 15%">Datetime</th>
-                        <th scope="col" style="width: 10%">IP Address</th>
+                        <th scope="col" style="width: 15%">瀏覽時間</th>
+                        <th scope="col" style="width: 10%">IP</th>
                         <th scope="col" style="width: 10%">Port</th>
-                        <th scope="col" style="width: 15%">Location</th>
                         <th scope="col" style="width: 40%">User agent</th>
+                        <th scope="col" style="width: 15%">經緯度</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -105,22 +86,19 @@
                         <td>{{ record.date }}</td>
                         <td>{{ record.ip }}</td>
                         <td>{{ record.port }}</td>
-                        <td>Lat: {{record.latitude}}<br>Lon: {{record.longitude}}</td>
-
-                        <!--{% set len = record.user_agent|length %}-->
                         <td>
                             {% for agent in record.user_agent %}
                             {{ agent }}<br>
                             {% endfor %}
 
                         </td>
+                        <td>Lat: {{record.latitude}}<br>Lon: {{record.longitude}}</td>
                     </tr>
                     {% endfor %}
                 </tbody>
             </table>
         </div>
     </div>
-
 </section>
 
 </html>

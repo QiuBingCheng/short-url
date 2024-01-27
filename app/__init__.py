@@ -1,7 +1,7 @@
 # __init__.py is a special Python file that allows a directory to become
 # a Python package so it can be accessed using the 'import' statement.
 
-from flask import Flask, render_template
+from flask import Flask, render_template, jsonify
 from flask_mail import Mail
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
@@ -77,4 +77,13 @@ def create_app():
     @app.errorhandler(404)
     def page_not_found(error):
         return render_template("errors/404.html"), 404
+
+    @app.errorhandler(500)
+    def server_error(error):
+        return jsonify(error='Error', message=str(error.description)), 500
+
+    @app.errorhandler(409)
+    def conflict_error(error):
+        return jsonify(error='Conflict', message=str(error.description)), 409
+
     return app

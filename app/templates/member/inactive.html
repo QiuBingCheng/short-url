@@ -1,11 +1,21 @@
-<div class="text-center">
-    <h1>歡迎</h1>
-    <br />
-    <p>
-        您尚未確認您的帳戶。 請檢查您的收件匣（以及您的垃圾郵件資料夾） - 您應該已收到一封帶有確認連結的電子郵件。
-    </p>
-    <p>
-        Didn't get the email?
-        <a href="{{ url_for('resend_confirmation') }}">Resend</a>.
-    </p>
-</div>
+<head>
+    <link type="text/css" rel="stylesheet" href={{ url_for('static', filename='common.css' )}}>
+    <link href="//maxcdn.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css" rel="stylesheet" id="bootstrap-css">
+</head>
+
+<body>
+    <nav class="mb-1 navbar navbar-expand-lg navbar-dark default-color">
+        <a class="navbar-brand" href="#">IP TRACER</a>
+    </nav>
+    <div class="text-center">
+        <h1>嗨 {{ username }} </h1>
+        <br />
+        <p>
+            您尚未確認您的帳戶。請檢查您的收件匣（以及您的垃圾郵件資料夾） - 您應該已收到一封帶有確認連結的電子郵件。
+        </p>
+        <p>
+            沒有收到信件嗎？
+            <a href="{{ url_for('member.resend_confirmation') }}">重新發送驗證信</a>.
+        </p>
+    </div>
+</body>

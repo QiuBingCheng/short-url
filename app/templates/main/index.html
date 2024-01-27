@@ -99,15 +99,13 @@
                         <input id="shortenBox" name="url" type="text" autofocus="autofocus"
                             class="form-control input-cls" placeholder="輸入欲縮短的合法網址">
                     </div>
-                    <p style="text-align: left;margin-bottom:0px">短網址：<a id="shortUrl" href="#">#</a></p>
+                    <p style="text-align: left;margin-bottom:0px">短網址：<a id="shortUrl" href="#" target="_blank"></a></p>
                     <div class="form-group col-xs-12">
                         <button type="button" id="shortenBtn" class="btn btn-info"
                             style="margin-right: 10px;border-color: azure;" onclick="shortenUrlForm()">縮短網址
                             <span id="loadingIcon" class="spinner-border spinner-border-sm" role="status" hidden></span>
                         </button>
-
                     </div>
-
                 </form>
                 <!-- The Modal -->
                 <div class="modal" id="myModal">
@@ -165,7 +163,6 @@
             })
             return
         }
-
         createShortUrl(longUrl)
     }
 
@@ -174,7 +171,6 @@
         if (status == "start") {
             // show loading icon
             $("#loadingIcon").prop('hidden', false)
-
             $("#shortenBox").prop('disabled', true)
             $("#shortenBtn").text("縮短中...")
             $("#shortenBtn").prop('disabled', true)
@@ -182,7 +178,6 @@
         else if (status == "end") {
             // hide loading icon
             $("#loadingIcon").prop('hidden', true)
-
             $("#shortenBtn").prop('disabled', false)
             $("#shortenBtn").text("縮短連結")
             $("#shortenBox").prop('disabled', false)
@@ -190,6 +185,7 @@
     }
     async function createShortUrl(longUrl) {
         console.log("createShortUrl is called")
+        console.log(longUrl)
 
         switchLoadingStatus("start")
 
