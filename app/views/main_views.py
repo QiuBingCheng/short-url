@@ -2,7 +2,7 @@
 from flask import Blueprint, request, render_template, jsonify, redirect, url_for
 from flask_login import current_user, login_required
 from app.database.models import UrlMapping, TracingRecord
-from app.lib.util import date_str, make_short_url, make_tracing_url
+from app.lib.util import make_short_url, make_tracing_url
 from app.lib.request_parser import get_client_info
 from app.lib.db_operation import (generate_tracing_code, admin_id,
                                   delete_records,
