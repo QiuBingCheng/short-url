@@ -163,22 +163,27 @@
       const action = $('#login-form').attr('action')
       try {
 
-        result = await axios.post(action, formData, {headers: {'Content-Type': 'multipart/form-data'} })
-        Swal.fire(`已寄出驗證連結至 ${formData.email}，請收信以完成申請流程噢 ~`);
-        console.log(result)
-        if (result.request.responseURL !== result.config.url) {
-              const redirectUrl = result.request.responseURL;
-              window.location.href = redirectUrl;
-        }
+        response = await axios.post(action, formData, {headers: {'Content-Type': 'multipart/form-data'} })
+        const redirectUrl = response.request.responseURL;
 
+        Swal.fire({
+          text: `已寄出驗證連結至 ${formData.email}，請收信以完成申請流程噢 ~`,
+          icon: 'success'
+
+        }).then((result) => {
+          // Check if the user clicked "OK"
+          if (result.isConfirmed) {
+              window.location.href = redirectUrl;
+          }
+        });
       } catch (error) {
 
         // Handle error
         console.log(error)
         Swal.fire({
             icon: 'error',
-            title: 'Oops...',
-            text: error.message
+            title: error.response.data.error,
+            text: error.response.data.message
           })
 
       } finally{

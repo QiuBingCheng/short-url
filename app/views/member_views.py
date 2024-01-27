@@ -1,6 +1,9 @@
 
 
-from flask import Blueprint, request, render_template, jsonify, redirect, url_for
+from flask import (Blueprint, request,
+                   render_template, jsonify,
+                   redirect, url_for, abort
+                   )
 from flask_login import current_user, login_user, logout_user, login_required
 from app.database.models import User
 from datetime import datetime
@@ -42,9 +45,10 @@ def login():
             return jsonify({"flag": FAIL, "msg": msg})
 
         # After successful login, check the 'next' parameter
-        next_url = request.form["next"]
-        if not next_url or not next_url.startswith('/'):
-            next_url = url_for('main.home')
+        if ("next" in request.form) and (request.form["next"].startswith('/')):
+            next_url = request.form["next"]
+        else:
+            next_url = url_for("main.home")
 
         login_user(user)
         print(f"Successfully logged in.{user}")
@@ -101,6 +105,12 @@ def register():
         password = request.form['password']
         email = request.form['email']
 
+        # check if user exist
+        if (User.query.filter_by(email=email).first()):
+            abort(409, description="該信箱已經被註冊，請改用其他信箱~")
+        if (User.query.filter_by(username=username).first()):
+            abort(409, description="該使用者名稱已經被註冊，請改用其他名稱~")
+
         try:
             # save user data
             user = User(email=email, password=password, username=username)
@@ -120,7 +130,7 @@ def register():
 
         except Exception as e:
             print(e)
-            return jsonify(FAIL)
+            abort(500, description="註冊失敗，請通知網站維護人員~")
 
     return render_template("member/register.html", code=302)
 
