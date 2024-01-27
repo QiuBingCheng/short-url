@@ -36,39 +36,45 @@ def home():
                                is_confirmed=is_confirmed)
 
     elif request.method == 'POST':
+
         print(request.form)
         long_url = request.form["long_url"]
-        token = generate_tracing_code()
+        code = generate_tracing_code()
 
         # If user not logged in, admin will be used to store mapping record.
-        if current_user.is_authenticated:
+        if (not current_user.is_anonymous) and (current_user.is_confirmed):
             id_ = current_user.id
         else:
             id_ = admin_id()
 
-        url_map = UrlMapping(tracing_code=token,
+        url_map = UrlMapping(tracing_code=code,
                              long_url=long_url, user_id=id_)
         url_map.save()
         print(f"{url_map} is saved.")
+        short_url = make_short_url(code)
 
-        short_url = make_short_url(token)
         return jsonify({"short_url": short_url})
 
 
 @main_blueprint.route('/trace/<tracing_code>')
+@login_required
 def trace(tracing_code):
+
+    if not current_user.is_confirmed:
+        return redirect(url_for("member.login"), code=302)
+
     url_mapping = UrlMapping.query.filter_by(
         tracing_code=tracing_code).first_or_404()
     print(url_mapping)
 
     # query the visit records of the trace
-    records_of_the_url = TracingRecord.query.filter_by(
-        tracing_code=tracing_code).all()
+    records_of_the_url = url_mapping.tracing_records
+    print(records_of_the_url)
 
     modified_records = []
     for record in records_of_the_url:
         # modify some attribure
-        date = date_str(record.created_time)
+        date = record.created_time.strftime('%Y-%m-%d %H:%M:%S')
         latitude, longitude = record.location.split(",")
         user_agent = "".join(
             [s+"#" if s == ")" else s.strip() for s in record.user_agent]).split("#")
@@ -103,7 +109,9 @@ def redirect_url(tracing_code):
                                location=info["location"],
                                user_agent=info['user_agent'])
 
-    new_record.save()
+    _, msg = new_record.save()
+    print(msg)
+
     return redirect(url_mapping.long_url, code=302)
 
 
@@ -118,17 +126,24 @@ def admin():
     print(current_user.url_mappings)
 
     url_mappings = current_user.url_mappings
-    for i, url in enumerate(url_mappings):
-        url_mappings[i].short_url = make_short_url(url.tracing_code)
-        url_mappings[i].tracing_url = make_tracing_url(url.tracing_code)
-        url_mappings[i].created_time = date_str(url_mappings[i].created_time)
-    return render_template("main/admin.html", url_mappings=url_mappings)
+    modified_records = []
+    for url_map in url_mappings:
+
+        modified_record = {"id": url_map.id}
+        modified_record["long_url"] = url_map.long_url
+        modified_record["short_url"] = make_short_url(url_map.tracing_code)
+        modified_record["tracing_url"] = make_tracing_url(url_map.tracing_code)
+        modified_record["created_time"] = url_map.created_time.strftime(
+            '%Y-%m-%d %H:%M:%S')
+        modified_records.append(modified_record)
+
+    return render_template("main/admin.html", url_mappings=modified_records)
 
 
 @main_blueprint.route("/delete_record", methods=["GET"])
 @login_required
 def delete_record():
-    if current_user is None:
+    if not current_user.is_confirmed:
         return redirect(url_for("member.login"), code=302)
 
     id = int(request.args.get("id"))
