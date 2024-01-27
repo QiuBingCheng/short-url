@@ -24,7 +24,7 @@ class ModelBase():
             db.session.rollback()
             return False, erorr_msg
         else:
-            return True, 'Success'
+            return True, f"{self} is saved!"
 
     def delete(self):
         try:
@@ -77,7 +77,7 @@ class UrlMapping(db.Model, ModelBase):
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
 
     # Define the one-to-many relationship
-    tracing_record = db.relationship(
+    tracing_records = db.relationship(
         'TracingRecord', backref='url_mapping', lazy=True)
 
     def __init__(self, tracing_code, long_url, user_id):
@@ -99,7 +99,7 @@ class TracingRecord(db.Model, ModelBase):
 
     # Define the foreign key relationship
     tracing_code = db.Column(db.String(64), db.ForeignKey(
-        'url_mapping.tracing_code'), unique=True, nullable=False)
+        'url_mapping.tracing_code'), nullable=False)
 
     def __init__(self, tracing_code, ip, port, location, user_agent
                  ):
@@ -110,4 +110,4 @@ class TracingRecord(db.Model, ModelBase):
         self.user_agent = user_agent
 
     def __repr__(self):
-        return f"<TracingRecord tracing_code={self.tracing_code}, created_time={self.created_time}>"
+        return f"<TracingRecord id={self.id}, tracing_code={self.tracing_code}, created_time={self.created_time}>"
