@@ -6,7 +6,7 @@ __pycache__/
 # C extensions
 *.so
 ngrok.exe
-settings.py
+app/settings.py
 shorturl001-8d9297185727.json
 gcp_command.txt
 
