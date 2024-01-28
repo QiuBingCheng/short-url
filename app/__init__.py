@@ -57,6 +57,9 @@ def create_app():
     from .views import register_blueprints
     register_blueprints(app)
 
+    #
+    from .database.models import User
+    user_manager.set_user_model(User)
     ########################
     #### error handlers ####
     ########################

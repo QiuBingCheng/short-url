@@ -1,7 +1,6 @@
 
 from flask import session
 from enum import Enum
-import importlib
 
 
 class CurrentUserManager():
@@ -18,7 +17,9 @@ class CurrentUserManager():
         # Initialization method, called only if the instance hasn't been initialized before
         if not self._initialized:
             self._initialized = True
-            self.User = importlib.import_module("app.database.models").User
+
+    def set_user_model(self, user_model):
+        self.User = user_model
 
     def login(self, user_id):
         session["user_id"] = user_id
