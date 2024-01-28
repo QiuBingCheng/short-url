@@ -1,12 +1,12 @@
 # __init__.py is a special Python file that allows a directory to become
 # a Python package so it can be accessed using the 'import' statement.
 
+from app.lib.user_manager import CurrentUserManager
 from flask import Flask, render_template, jsonify
 from flask_mail import Mail
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from google.cloud.sql.connector import Connector, IPTypes
-from flask_login import LoginManager
 import logging
 logging.basicConfig(level=logging.INFO)
 # %%
@@ -18,21 +18,8 @@ db = SQLAlchemy()
 migrate = Migrate()
 connector = Connector()
 mail = Mail()
-login_manager = LoginManager()
-
+user_manager = CurrentUserManager()
 # Initialize Flask Application
-
-# Setup Flask login
-
-
-login_manager.init_app(app)
-login_manager.login_view = "member.login"
-
-
-@login_manager.user_loader
-def load_user(user_id):
-    from app.database.models import User
-    return User.query.get(user_id)
 
 
 def create_app():
@@ -74,16 +61,24 @@ def create_app():
     #### error handlers ####
     ########################
 
+    @app.errorhandler(400)
+    def bad_request(error):
+        print(error)
+        return jsonify(error='Bad Request', message=str(error.description)), 400
+
     @app.errorhandler(404)
     def page_not_found(error):
+        print(error)
         return render_template("errors/404.html"), 404
-
-    @app.errorhandler(500)
-    def server_error(error):
-        return jsonify(error='Error', message=str(error.description)), 500
 
     @app.errorhandler(409)
     def conflict_error(error):
+        print(error)
         return jsonify(error='Conflict', message=str(error.description)), 409
+
+    @app.errorhandler(500)
+    def server_error(error):
+        print(error)
+        return jsonify(error='Error', message=str(error.description)), 500
 
     return app

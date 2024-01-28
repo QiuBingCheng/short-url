@@ -24,6 +24,6 @@ def init_data():
     user = User(username=app.config["USERNAME"],
                 password=app.config["PASSWORD"],
                 email=app.config["MAIL"],
-                is_confirmed=True, role="admin")
+                is_authenticated=True, role="admin")
     user.save()
     logging.info(f"{user} has been added.")

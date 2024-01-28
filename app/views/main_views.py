@@ -1,13 +1,15 @@
 
 from flask import Blueprint, request, render_template, jsonify, redirect, url_for
-from flask_login import current_user, login_required
 from app.database.models import UrlMapping, TracingRecord
 from app.lib.util import make_short_url, make_tracing_url
+from app.lib.user_manager import ClientType
+from app.lib.decorators import login_required
 from app.lib.request_parser import get_client_info
 from app.lib.db_operation import (generate_tracing_code, admin_id,
                                   delete_records,
                                   get_record_by_id)
 import pytz
+from app import user_manager
 
 main_blueprint = Blueprint('main', __name__, template_folder='templates')
 
@@ -21,19 +23,15 @@ def home():
 
     if request.method == 'GET':
 
-        username = "訪客"
-        logged = False
-        is_confirmed = False
+        client_type = user_manager.user_type
+        username = "訪客" if client_type == ClientType.VISITOR else user_manager.user.username
 
-        if not current_user.is_anonymous:
-            logged = True
-            username = current_user.username
-            is_confirmed = current_user.is_confirmed
+        print(f"Current user: {user_manager.user}")
+        print(f"User type: {client_type}")
 
-        print(f"Current user: {current_user}")
-        return render_template('main/index.html', logged=logged,
-                               username=username,
-                               is_confirmed=is_confirmed)
+        return render_template('main/index.html',
+                               client_type=client_type.value,
+                               username=username)
 
     elif request.method == 'POST':
 
@@ -42,15 +40,15 @@ def home():
         code = generate_tracing_code()
 
         # If user not logged in, admin will be used to store mapping record.
-        if (not current_user.is_anonymous) and (current_user.is_confirmed):
-            id_ = current_user.id
+        if user_manager.user_type == ClientType.VERIFIED_MEMBER:
+            id_ = user_manager.user.id
         else:
             id_ = admin_id()
 
         url_map = UrlMapping(tracing_code=code,
                              long_url=long_url, user_id=id_)
-        url_map.save()
-        print(f"{url_map} is saved.")
+        _, msg = url_map.save()
+        print(msg)
         short_url = make_short_url(code)
 
         return jsonify({"short_url": short_url})
@@ -59,9 +57,6 @@ def home():
 @main_blueprint.route('/trace/<tracing_code>')
 @login_required
 def trace(tracing_code):
-
-    if not current_user.is_confirmed:
-        return redirect(url_for("member.login"), code=302)
 
     url_mapping = UrlMapping.query.filter_by(
         tracing_code=tracing_code).first_or_404()
@@ -100,14 +95,14 @@ def redirect_url(tracing_code):
 
     url_mapping = UrlMapping.query.filter_by(
         tracing_code=tracing_code).first_or_404()
-    info = get_client_info(request)
+    client_info = get_client_info(request)
 
     # create record
     new_record = TracingRecord(tracing_code=tracing_code,
-                               ip=info["ip"],
-                               port=info["port"],
-                               location=info["location"],
-                               user_agent=info['user_agent'])
+                               ip=client_info.ip,
+                               port=client_info.port,
+                               location=client_info.location,
+                               user_agent=client_info.user_agent)
 
     _, msg = new_record.save()
     print(msg)
@@ -119,13 +114,15 @@ def redirect_url(tracing_code):
 @login_required
 def admin():
 
-    if not current_user.is_confirmed:
+    if user_manager.user_type != ClientType.VERIFIED_MEMBER:
         return redirect(url_for("member.inactive"))
 
-    print(current_user)
-    print(current_user.url_mappings)
+    user = user_manager.user
 
-    url_mappings = current_user.url_mappings
+    print(user)
+    print(user.url_mappings)
+
+    url_mappings = user.url_mappings
     modified_records = []
     for url_map in url_mappings:
 
@@ -143,7 +140,7 @@ def admin():
 @main_blueprint.route("/delete_record", methods=["GET"])
 @login_required
 def delete_record():
-    if not current_user.is_confirmed:
+    if user_manager.user_type != ClientType.VERIFIED_MEMBER:
         return redirect(url_for("member.login"), code=302)
 
     id = int(request.args.get("id"))

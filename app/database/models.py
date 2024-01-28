@@ -1,7 +1,6 @@
 from app import db
 from datetime import datetime
 from werkzeug.security import generate_password_hash, check_password_hash
-from flask_login import UserMixin
 import pytz
 
 TIME_ZONE = pytz.timezone('Asia/Taipei')
@@ -37,25 +36,25 @@ class ModelBase():
             return True, 0
 
 
-class User(UserMixin, db.Model, ModelBase):
+class User(db.Model, ModelBase):
     __tablename__ = 'user'
 
     username = db.Column(db.String(80), unique=True, nullable=False)
     email = db.Column(db.String(120), unique=True, nullable=False)
     password_hash = db.Column(db.String(128), nullable=False)
-    is_confirmed = db.Column(db.Boolean, default=False)
-    confirmed_time = db.Column(db.DateTime, default=None)
+    is_authenticated = db.Column(db.Boolean, default=False)
+    authenticated_time = db.Column(db.DateTime, default=None)
     role = db.Column(db.String(20), default='user', nullable=False)
 
     # Define the one-to-many relationship
     url_mappings = db.relationship('UrlMapping', backref='user', lazy=True)
 
-    def __init__(self, username, email, password, role=None, is_confirmed=None):
+    def __init__(self, username, email, password, role=None, is_authenticated=None):
         self.username = username
         self.email = email
         self.set_password(password)
         self.role = role
-        self.is_confirmed = is_confirmed
+        self.is_authenticated = is_authenticated
 
     def __repr__(self):
         return f"<User id={self.id}, email={self.email}>"
