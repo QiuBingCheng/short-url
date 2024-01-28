@@ -4,13 +4,13 @@ from app import app, mail
 
 
 def send_email(to, subject, template):
-    print("send_email is called")
+    print('send_email is called')
     print(to, subject)
 
     msg = Message(
         subject,
         recipients=[to],
         html=template,
-        sender=app.config["MAIL_DEFAULT_SENDER"],
+        sender=app.config['MAIL_DEFAULT_SENDER'],
     )
     mail.send(msg)

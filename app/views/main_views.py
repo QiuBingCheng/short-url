@@ -13,30 +13,41 @@ from app import user_manager
 
 main_blueprint = Blueprint('main', __name__, template_folder='templates')
 
-FAIL = "fail"
-SUCCESS = "success"
+FAIL = 'fail'
+SUCCESS = 'success'
 TIME_ZONE = pytz.timezone('Asia/Taipei')
 
 
 @main_blueprint.route('/', methods=('GET', 'POST'))
 def home():
+    """
+    Handles requests to the home page.
+
+    GET:
+    - Renders the home page with information about the current user.
+
+    POST:
+    - Processes the submitted form data to create a short URL mapping for a long URL.
+      If the user is a verified member, the mapping is associated with their account;
+      otherwise, the admin account is used.
+
+    """
 
     if request.method == 'GET':
 
         client_type = user_manager.user_type
-        username = "訪客" if client_type == ClientType.VISITOR else user_manager.user.username
+        username = '訪客' if client_type == ClientType.VISITOR else user_manager.user.username
 
-        print(f"Current user: {user_manager.user}")
-        print(f"User type: {client_type}")
+        print(f'Current user: {user_manager.user}')
+        print(f'User type: {client_type}')
 
         return render_template('main/index.html',
                                client_type=client_type.value,
                                username=username)
 
     elif request.method == 'POST':
-
         print(request.form)
-        long_url = request.form["long_url"]
+        long_url = request.form['long_url']
         code = generate_tracing_code()
 
         # If user not logged in, admin will be used to store mapping record.
@@ -47,39 +58,51 @@ def home():
 
         url_map = UrlMapping(tracing_code=code,
                              long_url=long_url, user_id=id_)
-        _, msg = url_map.save()
-        print(msg)
-        short_url = make_short_url(code)
+        success, msg = url_map.save()
 
-        return jsonify({"short_url": short_url})
+        if success:
+            short_url = make_short_url(code)
+            return jsonify({'short_url': short_url})
+        else:
+            print(f'Error saving URL mapping: {msg}')
+            return jsonify({'error': 'Failed to save URL mapping'}), 500
 
 
 @main_blueprint.route('/trace/<tracing_code>')
 @login_required
 def trace(tracing_code):
+    '''
+    Handles tracing of a short URL by displaying visit records.
+
+    Parameters:
+    - tracing_code (str): The unique tracing code associated with the short URL.
+
+    Returns:
+    - Renders the 'main/track.html' template with modified visit records and related information.
+    '''
 
     url_mapping = UrlMapping.query.filter_by(
         tracing_code=tracing_code).first_or_404()
     print(url_mapping)
 
-    # query the visit records of the trace
+    # Query the visit records of the shorturl
     records_of_the_url = url_mapping.tracing_records
     print(records_of_the_url)
 
     modified_records = []
     for record in records_of_the_url:
-        # modify some attribure
+        # Modify some attributes
         date = record.created_time.strftime('%Y-%m-%d %H:%M:%S')
-        latitude, longitude = record.location.split(",")
-        user_agent = "".join(
-            [s+"#" if s == ")" else s.strip() for s in record.user_agent]).split("#")
+        latitude, longitude = record.location.split(',')
+        user_agent = ''.join(
+            [s+'#' if s == ')' else s.strip() for s in record.user_agent]).split('#')
 
-        # store modified record
+        # Store modified record
         modified_record = record.to_dict()
-        modified_record["latitude"] = latitude
-        modified_record["longitude"] = longitude
-        modified_record["date"] = date
-        modified_record["user_agent"] = user_agent
+        modified_record['latitude'] = latitude
+        modified_record['longitude'] = longitude
+        modified_record['date'] = date
+        modified_record['user_agent'] = user_agent
 
         modified_records.append(modified_record)
 
@@ -92,7 +115,9 @@ def trace(tracing_code):
 
 @main_blueprint.route('/<tracing_code>')
 def redirect_url(tracing_code):
-
+    """
+    Redirects to the original long URL associated with the given tracing code.
+    """
     url_mapping = UrlMapping.query.filter_by(
         tracing_code=tracing_code).first_or_404()
     client_info = get_client_info(request)
@@ -104,59 +129,70 @@ def redirect_url(tracing_code):
                                location=client_info.location,
                                user_agent=client_info.user_agent)
 
-    _, msg = new_record.save()
-    print(msg)
+    success, msg = new_record.save()
+    if success:
+        return redirect(url_mapping.long_url, code=302)
+    else:
+        print(f'Error saving TracingRecord: {msg}')
+        return render_template('error.html', error='Failed to save tracing record'), 500
 
-    return redirect(url_mapping.long_url, code=302)
 
-
-@main_blueprint.route("/admin", methods=["GET"])
+@main_blueprint.route('/admin', methods=['GET'])
 @login_required
 def admin():
-
+    """
+    Renders the admin page with URL mappings for the logged-in verified member.
+    """
     if user_manager.user_type != ClientType.VERIFIED_MEMBER:
-        return redirect(url_for("member.inactive"))
+        return redirect(url_for('member.inactive'))
 
     user = user_manager.user
-
-    print(user)
-    print(user.url_mappings)
-
     url_mappings = user.url_mappings
+
     modified_records = []
     for url_map in url_mappings:
-
-        modified_record = {"id": url_map.id}
-        modified_record["long_url"] = url_map.long_url
-        modified_record["short_url"] = make_short_url(url_map.tracing_code)
-        modified_record["tracing_url"] = make_tracing_url(url_map.tracing_code)
-        modified_record["created_time"] = url_map.created_time.strftime(
-            '%Y-%m-%d %H:%M:%S')
+        modified_record = {
+            'id': url_map.id,
+            'long_url': url_map.long_url,
+            'short_url': make_short_url(url_map.tracing_code),
+            'tracing_url': make_tracing_url(url_map.tracing_code),
+            'created_time': url_map.created_time.strftime('%Y-%m-%d %H:%M:%S')
+        }
         modified_records.append(modified_record)
 
-    return render_template("main/admin.html", url_mappings=modified_records)
+    return render_template('main/admin.html', url_mappings=modified_records)
 
 
-@main_blueprint.route("/delete_record", methods=["GET"])
+@main_blueprint.route('/delete_record', methods=['GET'])
 @login_required
 def delete_record():
+    """
+    Deletes a URL mapping and its associated tracing records.
+
+    Returns:
+    - JSON response indicating success or failure.
+    """
+
     if user_manager.user_type != ClientType.VERIFIED_MEMBER:
-        return redirect(url_for("member.login"), code=302)
+        return redirect(url_for('member.login'), code=302)
 
-    id = int(request.args.get("id"))
-    # Delete related tracing records at first
-    url_mapping_record = get_record_by_id(UrlMapping, id)
-    if url_mapping_record is None:
-        return jsonify(FAIL)
+    try:
+        id = int(request.args.get('id'))
 
-    result = delete_records(
-        TracingRecord, {"tracing_code": url_mapping_record.tracing_code})
+        # Delete related tracing records first
+        url_mapping_record = get_record_by_id(UrlMapping, id)
+        if url_mapping_record is None:
+            return jsonify(FAIL)
 
-    if not result:
-        return jsonify(FAIL)
+        result_tracing = delete_records(
+            TracingRecord, {'tracing_code': url_mapping_record.tracing_code})
+        result_mapping = delete_records(UrlMapping, {'id': id})
 
-    result = delete_records(UrlMapping, {"id": id})
-    if not result:
-        return jsonify(FAIL)
+        if result_tracing and result_mapping:
+            return jsonify({'status': 'success'})
+        else:
+            return jsonify({'status': 'fail'})
 
-    return jsonify(SUCCESS)
+    except ValueError:
+        # Handle invalid ID parameter
+        return jsonify({'status': 'fail'})

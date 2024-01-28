@@ -22,14 +22,14 @@ TIME_ZONE = pytz.timezone('Asia/Taipei')
 # %%
 
 
-@member_blueprint.route("/login", methods=["GET", "POST"])
+@member_blueprint.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
         """
         Handles the user login process.
         """
-        username = request.form["username"]
-        password = request.form["password"]
+        username = request.form['username']
+        password = request.form['password']
 
         # perform authentication logic
         user = User.query.filter_by(username=username).first()
@@ -38,42 +38,38 @@ def login():
             abort(400, description=f"username {username} doesn't exist")
 
         if not user.is_authenticated:
-            abort(400, description="account is not activated yet")
+            abort(400, description='account is not activated yet')
 
         result = user.check_password(password)
         if not result:
-            abort(400, description="password is not correct.")
+            abort(400, description='password is not correct.')
 
         # After successful login, check the 'next' parameter
-        next_url = request.form.get("next", url_for("main.home"))
+        next_url = request.form.get('next', url_for('main.home'))
 
         # Attempt to log in the user
-        flag = user_manager.login(user.id)
+        user_manager.login(user.id)
+        print(f'Successfully logged in. {user}')
 
         # [Todo] if user registered before
         # but not verified，send mail agail.
-
-        if flag:
-            print(f"Successfully logged in. {user}")
-        else:
-            print(f"login failed. {user}")
 
         return redirect(next_url, code=302)
 
     elif request.method == 'GET':
 
         if user_manager.user_type == ClientType.VISITOR:
-            return render_template("member/login.html")
+            return render_template('member/login.html')
         elif user_manager.user_type == ClientType.UNVERIFIED_MEMBER:
-            return redirect(url_for("member.inactive"), code=302)
+            return redirect(url_for('member.inactive'), code=302)
         else:
-            return redirect(url_for("main.home"), code=302)
+            return redirect(url_for('main.home'), code=302)
 
 
-@member_blueprint.route("/logout")
+@member_blueprint.route('/logout')
 def logout():
     user_manager.logout()
-    return redirect(url_for("member.login"), code=302)
+    return redirect(url_for('member.login'), code=302)
 
 
 @member_blueprint.route('/confirm_email/<token>')
@@ -81,11 +77,11 @@ def confirm_email(token):
     """
     Handles the email confirmation process using the provided token
     """
-    error_msg = "The confirmation link is invalid or has expired."
+    error_msg = 'The confirmation link is invalid or has expired.'
 
     if user_manager.user_type == ClientType.VERIFIED_MEMBER:
-        print(f"{user_manager.user} already confirmed.")
-        return redirect(url_for("main.home"))
+        print(f'{user_manager.user} already confirmed.')
+        return redirect(url_for('main.home'))
 
     email = confirm_token(token)
     user = User.query.filter_by(email=user_manager.user.email).first_or_404()
@@ -94,8 +90,8 @@ def confirm_email(token):
         user.is_authenticated = True
         user.authenticated_time = datetime.now(TIME_ZONE)
         user.save()
-        print(f"{user} confirmed the account")
-        return redirect(url_for("main.home"))
+        print(f'{user} confirmed the account')
+        return redirect(url_for('main.home'))
 
     print(error_msg)
     return jsonify(error_msg)
@@ -126,9 +122,9 @@ def check_existing_user(username, email):
     Checks if a user with the given username or email already exists in the database.
     """
     if User.query.filter_by(email=email).first():
-        abort(409, description="該信箱已經被註冊，請改用其他信箱~")
+        abort(409, description='該信箱已經被註冊，請改用其他信箱~')
     if User.query.filter_by(username=username).first():
-        abort(409, description="該使用者名稱已經被註冊，請改用其他名稱~")
+        abort(409, description='該使用者名稱已經被註冊，請改用其他名稱~')
 
 
 def create_user(email, password, username):
@@ -140,55 +136,51 @@ def create_user(email, password, username):
     flag, msg = user.save()
     if not flag:
         print(msg)
-        abort(500, description="註冊失敗，請通知網站維護人員~")
+        abort(500, description='註冊失敗，請通知網站維護人員~')
     return User.query.filter_by(email=email).first()
 
 
 def send_verification_email(user):
     """
     Sends a verification email to the provided user.
-
-    Parameters:
-        user: User object representing the user to whom the verification email will be sent.
-
-    Returns:
-        None
-
-    Example:
-        send_verification_email(my_user)
     """
     token = generate_token(user.email)
-    confirm_url = url_for("member.confirm_email", token=token, _external=True)
-    html = render_template("member/confirm_email.html",
+    confirm_url = url_for('member.confirm_email', token=token, _external=True)
+    html = render_template('member/confirm_email.html',
                            confirm_url=confirm_url)
-    subject = "Please confirm your email"
+    subject = 'Please confirm your email'
     send_email(user.email, subject, html)
 
 
 @member_blueprint.route('/register', methods=('GET', 'POST'))
 def register():
-
+    """
+    Handles user registration
+    """
     if request.method == 'POST':
 
         handle_registration()
-        return redirect(url_for("member.inactive"))
+        return redirect(url_for('member.inactive'))
 
-    return render_template("member/register.html", code=302)
+    return render_template('member/register.html', code=302)
 
 # %%
 
 
-@member_blueprint.route("/inactive")
+@member_blueprint.route('/inactive')
 @login_required
 def inactive():
+    """
+    Renders the 'inactive' page for unverified members.
+    """
     if user_manager.user_type == ClientType.VERIFIED_MEMBER:
-        return redirect(url_for("main.home"))
+        return redirect(url_for('main.home'))
 
-    return render_template("member/inactive.html",
+    return render_template('member/inactive.html',
                            username=user_manager.user.username)
 
 
-@member_blueprint.route("/resend")
+@member_blueprint.route('/resend')
 @login_required
 def resend_confirmation():
     """
@@ -196,13 +188,13 @@ def resend_confirmation():
     """
 
     if user_manager.user_type == ClientType.VERIFIED_MEMBER:
-        return redirect(url_for("main.home"))
+        return redirect(url_for('main.home'))
 
     token = generate_token(user_manager.user.email)
-    confirm_url = url_for("member.confirm_email",
+    confirm_url = url_for('member.confirm_email',
                           token=token, _external=True)
-    html = render_template("member/confirm_email.html",
+    html = render_template('member/confirm_email.html',
                            confirm_url=confirm_url)
-    subject = "Please confirm your email"
+    subject = 'Please confirm your email'
     send_email(user_manager.user.email, subject, html)
-    return redirect(url_for("member.inactive"))
+    return redirect(url_for('member.inactive'))
