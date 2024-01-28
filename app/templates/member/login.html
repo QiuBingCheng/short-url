@@ -121,27 +121,21 @@
         switchLoadingStatus("end")
         return 
       }
-
+    
       const action = $('#login-form').attr('action')
-      result = await axios.post(action, formData, {
-      headers: {
-        'Content-Type': 'multipart/form-data'
-      }
-      })
-      switchLoadingStatus("end")
-      console.log(result)
-      const data = result.data
-      if (data.flag === FAIL){
+
+      try {
+        result = await axios.post(action, formData, {headers: {'Content-Type': 'multipart/form-data'}})
+        window.location.href = result.request.responseURL;
+      } catch (error) {
         Swal.fire({
               icon: 'error',
-              title: 'Oops...',
-              text: data.msg,
+              title: error.response.data.error,
+              text: error.response.data.message
           })
-          return
+      } finally{
+        switchLoadingStatus("end")
       }
-
-      // handle the redirect
-      window.location.href = result.request.responseURL;
     });
 
     function validateInputFormat(formdata){

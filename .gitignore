@@ -9,7 +9,7 @@ ngrok.exe
 app/settings.py
 shorturl001-8d9297185727.json
 gcp_command.txt
-
+*.pptx
 # Distribution / packaging
 .Python
 build/
