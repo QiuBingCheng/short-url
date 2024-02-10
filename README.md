@@ -32,3 +32,8 @@ python manage.py init_data
 # Start the Flask development web server
 python run.py
 ```
+
+## References
+* https://realpython.com/flask-blueprint/
+* https://github.com/ashutoshkrris/Flask-User-Authentication-With-Email-Verification
+* https://github.com/GoogleCloudPlatform/cloud-sql-python-connector#how-to-use-this-connector
